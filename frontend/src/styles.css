@@ -21574,3 +21574,32 @@ tbody tr:hover {
 /* ============================================================
    BRANDING ADMIN + LOGIN DYNAMIC END
    ============================================================ */
+
+
+.branding-admin-hero .secondary-light-button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid #cbdbea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #234d76;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(17,50,88,.04);
+}
+
+.branding-admin-hero .secondary-light-button:hover {
+  background: #f5f9ff;
+  border-color: #a9c6e4;
+}
+
+.login-pro-card:not(:has(.login-pro-lock)) .login-pro-title {
+  margin-top: 2px;
+  text-align: left;
+}
+
+.login-pro-card:not(:has(.login-pro-lock)) .login-pro-title p {
+  margin-left: 0;
+  margin-right: 0;
+}
