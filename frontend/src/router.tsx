@@ -1,5 +1,4 @@
 import {
-  Navigate,
   createBrowserRouter,
 } from 'react-router';
 
@@ -14,6 +13,10 @@ import {
 import {
   AppLayout,
 } from './layouts/app-layout';
+
+import {
+  HomePage,
+} from './pages/home.page';
 
 import {
   LoginPage,
@@ -79,6 +82,11 @@ import {
 export const router =
   createBrowserRouter([
     {
+      path: '/',
+      element: <HomePage />,
+    },
+
+    {
       path: '/login',
       element: <LoginPage />,
     },
@@ -96,17 +104,6 @@ export const router =
           element: <AppLayout />,
 
           children: [
-            {
-              index: true,
-
-              element: (
-                <Navigate
-                  to="/dashboard"
-                  replace
-                />
-              ),
-            },
-
             {
               path: '/dashboard',
               element: <DashboardPage />,
