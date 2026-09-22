@@ -241,6 +241,52 @@ const moduleCards = [
   },
 ];
 
+function HeroTitle({
+  value,
+}: {
+  value: string;
+}) {
+  const marker =
+    'réussite durable';
+
+  const index =
+    value
+      .toLocaleLowerCase(
+        'fr-FR',
+      )
+      .indexOf(
+        marker,
+      );
+
+  if (
+    index <
+    0
+  ) {
+    return (
+      <>
+        {value}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {value
+        .slice(
+          0,
+          index,
+        )
+        .trim()}
+      {' '}
+      <em>
+        {value.slice(
+          index,
+        )}
+      </em>
+    </>
+  );
+}
+
 function actualiteSourceLabel(
   source:
     PublicActualite['source'],
@@ -507,11 +553,11 @@ export function HomePage() {
           </div>
 
           <h1>
-            Un suivi rigoureux
-            <br />
-            pour une <em>
-              réussite durable
-            </em>
+            <HeroTitle
+              value={
+                branding.heroTitle
+              }
+            />
           </h1>
 
           <p>
