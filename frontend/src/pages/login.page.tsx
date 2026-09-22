@@ -1,6 +1,7 @@
 import {
   useState,
   type FormEvent,
+  type ReactNode,
 } from 'react';
 
 import {
@@ -21,7 +22,7 @@ function Icon({
   children,
 }: {
   children:
-    React.ReactNode;
+    ReactNode;
 }) {
   return (
     <svg
