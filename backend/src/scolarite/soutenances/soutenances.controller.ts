@@ -127,6 +127,34 @@ export class SoutenancesController {
       );
   }
 
+  @Get('rapport-hebdomadaire')
+  @Permissions(
+    'REPORTING_CONSULTER',
+  )
+  rapportHebdomadaire(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .rapportHebdomadaire(
+        annee,
+      );
+  }
+
+  @Post('rapport-hebdomadaire/envoyer')
+  @Permissions(
+    'REPORTING_CONSULTER',
+  )
+  envoyerRapportHebdomadaire(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .envoyerRapportHebdomadaire(
+        annee,
+      );
+  }
+
   @Get(':id')
   @Permissions(
     'ELIGIBILITE_CONSULTER',
