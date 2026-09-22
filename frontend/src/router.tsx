@@ -64,6 +64,10 @@ import {
 } from './pages/notifications.page';
 
 import {
+  BrandingPage,
+} from './pages/branding.page';
+
+import {
   MonEspacePage,
 } from './pages/mon-espace.page';
 
@@ -220,6 +224,18 @@ export const router =
                   permission="AUDIT_CONSULTER"
                 >
                   <AuditPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/branding',
+
+              element: (
+                <RequireAccess
+                  permission="BRANDING_GERER"
+                >
+                  <BrandingPage />
                 </RequireAccess>
               ),
             },
