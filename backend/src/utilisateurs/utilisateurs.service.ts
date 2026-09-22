@@ -32,6 +32,7 @@ export class UtilisateursService {
     ['REPORTING_CONSULTER', 'Consulter les rapports'],
     ['AUDIT_CONSULTER', 'Consulter le journal d audit'],
     ['UTILISATEURS_GERER', 'Gérer les utilisateurs'],
+    ['BRANDING_GERER', 'Gérer l identité visuelle'],
   ] as const;
 
   private readonly rolePermissions:
@@ -51,6 +52,7 @@ export class UtilisateursService {
         'SCOLARITE_GERER',
         'REPORTING_CONSULTER',
               'UTILISATEURS_GERER',
+        'BRANDING_GERER',
       ],
 
       ETUDIANT: [
