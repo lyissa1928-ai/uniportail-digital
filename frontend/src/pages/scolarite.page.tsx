@@ -11,6 +11,8 @@ import {
   ApiException,
 } from '../lib/api';
 
+import { ActualitesManager } from '../components/actualites-manager';
+
 import { ScolariteEtudiantsOperations } from '../components/scolarite-etudiants-operations';
 
 type Tab =
@@ -1031,6 +1033,8 @@ export function ScolaritePage() {
           )}
         </section>
       )}
+      <ActualitesManager />
+
     </div>
   );
 }
