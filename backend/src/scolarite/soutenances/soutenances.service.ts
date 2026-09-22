@@ -380,63 +380,148 @@ export class SoutenancesService {
       );
     }
 
-    return this.prisma
-      .$transaction(
-        async (tx) => {
-          const updated =
-            await tx
-              .soutenance
-              .update({
-                where: {
-                  id,
+    const updated =
+      await this.prisma
+        .$transaction(
+          async (tx) => {
+            const result =
+              await tx
+                .soutenance
+                .update({
+                  where: {
+                    id,
+                  },
+
+                  data: {
+                    statut:
+                      'TENUE',
+
+                    validee:
+                      true,
+
+                    valideePar,
+
+                    dateValidation:
+                      new Date(),
+                  },
+                });
+
+            const validation =
+              await tx
+                .validationAcademique
+                .findUnique({
+                  where: {
+                    inscriptionId:
+                      soutenance
+                        .inscriptionId,
+                  },
+                });
+
+            if (validation) {
+              await tx
+                .validationAcademique
+                .update({
+                  where: {
+                    inscriptionId:
+                      soutenance
+                        .inscriptionId,
+                  },
+
+                  data: {
+                    memoireValide:
+                      soutenance.decision ===
+                      'ADMIS',
+                  },
+                });
+            }
+
+            return result;
+          },
+        );
+
+    const destinataires =
+      await this.prisma
+        .utilisateur
+        .findMany({
+          where: {
+            actif:
+              true,
+
+            roles: {
+              some: {
+                role: {
+                  code: {
+                    in: [
+                      'PEDAGOGIE',
+                      'DIRECTEUR_ETUDES',
+                      'DIRECTEUR',
+                    ],
+                  },
                 },
+              },
+            },
+          },
 
-                data: {
-                  statut:
-                    'TENUE',
+          select: {
+            id:
+              true,
+          },
+        });
 
-                  validee:
-                    true,
+    if (
+      destinataires.length >
+      0
+    ) {
+      const etudiant =
+        soutenance.inscription
+          .etudiant;
 
-                  valideePar,
+      const formation =
+        soutenance.inscription
+          .classe.niveau
+          .formation;
 
-                  dateValidation:
-                    new Date(),
-                },
-              });
+      await this.prisma
+        .notification
+        .createMany({
+          data:
+            destinataires.map(
+              (utilisateur) => ({
+                utilisateurId:
+                  utilisateur.id,
 
-          const validation =
-            await tx
-              .validationAcademique
-              .findUnique({
-                where: {
+                type:
+                  'INFO',
+
+                titre:
+                  'Soutenance validée',
+
+                message:
+                  `${etudiant.prenom} ${etudiant.nom} (${etudiant.matricule}) — ${formation.nom} — décision ${soutenance.decision}${soutenance.mention ? ` — mention ${soutenance.mention}` : ''}.`,
+
+                lien:
+                  '/soutenances',
+
+                donnees: {
+                  soutenanceId:
+                    soutenance.id,
+
                   inscriptionId:
                     soutenance
                       .inscriptionId,
-                },
-              });
 
-          if (validation) {
-            await tx
-              .validationAcademique
-              .update({
-                where: {
-                  inscriptionId:
-                    soutenance
-                      .inscriptionId,
-                },
+                  decision:
+                    soutenance.decision,
 
-                data: {
-                  memoireValide:
-                    soutenance.decision ===
-                    'ADMIS',
+                  mention:
+                    soutenance.mention,
                 },
-              });
-          }
+              }),
+            ),
+        });
+    }
 
-          return updated;
-        },
-      );
+    return updated;
   }
 
   async candidats(
