@@ -62,6 +62,52 @@ interface Formation {
   nom: string;
 }
 
+interface EvaluationEligibilite {
+  eligible: boolean;
+  statut: string;
+  motifs: string[];
+
+  inscription: {
+    id: number;
+    anneeAcademique: string;
+    statut: string;
+  };
+
+  formation: {
+    id: number;
+    code: string;
+    nom: string;
+  };
+
+  niveau: {
+    id: number;
+    code: string;
+    nom: string;
+    terminal: boolean;
+  };
+
+  classe: {
+    id: number;
+    code: string;
+    nom: string;
+  };
+
+  validationAcademique?: {
+    decision?: string;
+    creditsObtenus?: number;
+    creditsRequis?: number;
+    stageRequis?: boolean;
+    stageValide?: boolean;
+    memoireRequis?: boolean;
+    memoireValide?: boolean;
+    dateDeliberation?: string | null;
+  } | null;
+}
+
+interface EligibiliteEtudiantResponse {
+  evaluations: EvaluationEligibilite[];
+}
+
 const emptyEtudiant = {
   matricule: '',
   nom: '',
@@ -188,9 +234,9 @@ const pageStyles = `
 .sco-management{overflow:hidden}.sco-management header{padding:13px 14px 8px}.sco-management h2{margin:0 0 3px;font-size:15px;color:#0c1d3c}.sco-management p{margin:0;color:#7889a0;font-size:8px}.sco-table-wrap{overflow-x:auto}.sco-table{width:100%;border-collapse:collapse}.sco-table thead{background:#f5f8fc}.sco-table th{padding:10px 11px;border-top:1px solid #e7edf4;border-bottom:1px solid #dde6ef;color:#58708c;text-align:left;font-size:8px;font-weight:850;text-transform:uppercase;white-space:nowrap}.sco-table td{padding:10px 11px;border-bottom:1px solid #e9eef4;color:#2a4562;font-size:9px;vertical-align:middle}.sco-table tbody tr:hover{background:#fafcff}.sco-table-subtitle{display:block;color:#7b8ca1;font-size:8px;margin-top:2px}.sco-status{display:inline-flex;align-items:center;min-height:23px;padding:0 8px;border-radius:999px;font-size:8px;font-weight:800}.sco-status.active{background:#dff7e9;color:#14894f}.sco-status.inactive{background:#fee8eb;color:#bd404c}.sco-actions{display:flex;gap:5px;flex-wrap:wrap}.sco-actions button{min-height:28px;padding:0 9px;border:1px solid #d5e1ed;border-radius:6px;background:#f8fbff;color:#315f8c;font-size:8px;cursor:pointer}.sco-actions .danger{border-color:#f0ccd0;background:#fff1f2;color:#bf3f4b}
 .sco-empty{padding:28px;text-align:center;color:#7d8ca0;font-size:10px}.sco-empty strong{display:block;color:#314a67;margin-bottom:4px}
 .sco-inscription-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}.sco-inscription-form{padding:15px}.sco-form-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sco-form-heading h2{margin:0;color:#0c1d3c;font-size:15px}.sco-link{border:0;background:transparent;color:#2568ad;font-size:9px;cursor:pointer}
-.sco-profile{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px}.sco-profile h2{margin:3px 0;color:#0b1d3b}.sco-profile p{margin:0;color:#6e819b}.sco-timeline{display:grid;gap:10px}.sco-timeline-card{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px;border:1px solid var(--sco-border);border-radius:12px;background:#fff}.sco-timeline-year{font-weight:800;color:#245e9b}.sco-timeline-card h3{margin:0 0 4px;color:#0d1e3b}.sco-timeline-card p{margin:0;color:#73849b;font-size:9px}.sco-timeline-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:#627895;font-size:8px}
-@media(max-width:1100px){.sco-student-layout,.sco-inscription-layout{grid-template-columns:1fr}.sco-quick-card{position:static}.sco-kpis{grid-template-columns:repeat(2,1fr)}.sco-hero{align-items:flex-start;flex-direction:column}.sco-hero-note{min-width:0;width:100%}}
-@media(max-width:700px){.sco-kpis{grid-template-columns:1fr}.sco-tabsbar{align-items:stretch;flex-direction:column}.sco-tabs{overflow-x:auto}.sco-search{width:100%}.sco-table{min-width:850px}.sco-timeline-card{grid-template-columns:1fr}}
+.sco-profile{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px}.sco-profile-main{min-width:0}.sco-profile h2{margin:3px 0;color:#0b1d3b}.sco-profile p{margin:0;color:#6e819b}.sco-profile-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sco-profile-meta span{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border:1px solid #e1e9f2;border-radius:999px;background:#f8fbff;color:#58708c;font-size:8px}.sco-profile-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.sco-profile-stat{padding:13px;border:1px solid var(--sco-border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(20,48,88,.03)}.sco-profile-stat span{display:block;color:#73859d;font-size:8px;text-transform:uppercase;letter-spacing:.05em}.sco-profile-stat strong{display:block;margin-top:4px;color:#0b1d3a;font-size:16px;line-height:1.2}.sco-profile-stat small{display:block;margin-top:4px;color:#8190a4;font-size:8px}.sco-current-card{padding:15px}.sco-current-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.sco-current-heading h3{margin:0 0 3px;color:#0b1d3a;font-size:14px}.sco-current-heading p{margin:0;color:#71849c;font-size:9px}.sco-current-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.sco-current-item{padding:10px;border:1px solid #e5ecf4;border-radius:9px;background:#fafcff}.sco-current-item span{display:block;color:#7a8ba0;font-size:7px;text-transform:uppercase}.sco-current-item strong{display:block;margin-top:3px;color:#203a58;font-size:10px}.sco-eligibility{display:inline-flex;align-items:center;min-height:25px;padding:0 9px;border-radius:999px;font-size:8px;font-weight:800}.sco-eligibility.good{background:#dcf8e8;color:#137b49}.sco-eligibility.warn{background:#fff0df;color:#a86413}.sco-eligibility.neutral{background:#edf2f7;color:#66768a}.sco-timeline{display:grid;gap:10px}.sco-timeline-card{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px;border:1px solid var(--sco-border);border-radius:12px;background:#fff}.sco-timeline-year{font-weight:800;color:#245e9b}.sco-timeline-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.sco-timeline-card h3{margin:0 0 4px;color:#0d1e3b}.sco-timeline-card p{margin:0;color:#73849b;font-size:9px}.sco-timeline-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:#627895;font-size:8px}.sco-timeline-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.sco-chip{display:inline-flex;align-items:center;min-height:23px;padding:0 8px;border-radius:999px;background:#f0f4f8;color:#5d7189;font-size:8px;font-weight:750}.sco-chip.good{background:#e1f8eb;color:#167d4e}.sco-chip.warn{background:#fff0df;color:#a66516}.sco-eligibility-reasons{margin:8px 0 0;padding-left:16px;color:#7d5c32;font-size:8px;line-height:1.5}
+@media(max-width:1100px){.sco-student-layout,.sco-inscription-layout{grid-template-columns:1fr}.sco-quick-card{position:static}.sco-kpis,.sco-profile-overview,.sco-current-grid{grid-template-columns:repeat(2,1fr)}.sco-hero{align-items:flex-start;flex-direction:column}.sco-hero-note{min-width:0;width:100%}}
+@media(max-width:700px){.sco-kpis,.sco-profile-overview,.sco-current-grid{grid-template-columns:1fr}.sco-tabsbar{align-items:stretch;flex-direction:column}.sco-tabs{overflow-x:auto}.sco-search{width:100%}.sco-table{min-width:850px}.sco-profile{align-items:flex-start;flex-direction:column}.sco-timeline-card{grid-template-columns:1fr}}
 `;
 
 export function ScolaritePage() {
@@ -209,6 +255,8 @@ export function ScolaritePage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [etudiantForm, setEtudiantForm] = useState(emptyEtudiant);
   const [inscriptionForm, setInscriptionForm] = useState(emptyInscription);
+  const [eligibilite, setEligibilite] = useState<EligibiliteEtudiantResponse | null>(null);
+  const [eligibiliteLoading, setEligibiliteLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -245,6 +293,41 @@ export function ScolaritePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedEtudiantId) {
+      setEligibilite(null);
+      setEligibiliteLoading(false);
+      return;
+    }
+
+    setEligibiliteLoading(true);
+
+    api<EligibiliteEtudiantResponse>(
+      `/eligibilite/etudiant/${selectedEtudiantId}`,
+    )
+      .then((data) => {
+        if (!cancelled) {
+          setEligibilite(data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setEligibilite(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setEligibiliteLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEtudiantId]);
 
   function notify(text: string) {
     setMessage(text);
@@ -440,6 +523,30 @@ export function ScolaritePage() {
         .sort((a, b) => b.anneeAcademique.localeCompare(a.anneeAcademique))
     : [];
 
+  const selectedCurrentInscription =
+    selectedParcours.find(
+      (item) => item.statut === 'ACTIVE',
+    ) ??
+    selectedParcours[0] ??
+    null;
+
+  const selectedCompletedCount =
+    selectedParcours.filter(
+      (item) => item.statut === 'TERMINEE',
+    ).length;
+
+  const selectedEvaluation =
+    selectedCurrentInscription
+      ? eligibilite?.evaluations.find(
+          (item) =>
+            item.inscription.id ===
+            selectedCurrentInscription.id,
+        ) ??
+        eligibilite?.evaluations[0] ??
+        null
+      : eligibilite?.evaluations[0] ??
+        null;
+
   function getEtudiant(inscription: Inscription) {
     return (
       inscription.etudiant ??
@@ -532,7 +639,7 @@ export function ScolaritePage() {
           <button type="button" className={tab === 'parcours' ? 'active' : ''} onClick={() => setTab('parcours')}>Parcours académique</button>
         </div>
 
-        {tab !== 'parcours' && (
+        {(tab !== 'parcours' || !selectedEtudiant) && (
           <div className="sco-search">
             <Icon name="search" />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Rechercher..." />
@@ -667,20 +774,255 @@ export function ScolaritePage() {
           {selectedEtudiant && (
             <>
               <section className="sco-card sco-profile">
-                <div><small> DOSSIER ÉTUDIANT </small><h2>{selectedEtudiant.prenom} {selectedEtudiant.nom}</h2><p>{selectedEtudiant.matricule}</p></div>
-                <div className="sco-actions"><button type="button" onClick={() => { setInscriptionForm({ ...emptyInscription, etudiantId:String(selectedEtudiant.id) }); setTab('inscriptions'); }}>Nouvelle inscription</button><button type="button" onClick={() => setSelectedEtudiantId(null)}>Fermer</button></div>
+                <div className="sco-profile-main">
+                  <small>DOSSIER ÉTUDIANT</small>
+                  <h2>{selectedEtudiant.prenom} {selectedEtudiant.nom}</h2>
+
+                  <div className="sco-profile-meta">
+                    <span>Matricule : {selectedEtudiant.matricule}</span>
+                    <span>{selectedEtudiant.email ?? 'E-mail non renseigné'}</span>
+                    <span>{selectedEtudiant.telephone ?? 'Téléphone non renseigné'}</span>
+                    {selectedEtudiant.dateNaissance && (
+                      <span>Né(e) le {formatDate(selectedEtudiant.dateNaissance)}</span>
+                    )}
+                    <span>{selectedEtudiant.actif ? 'Étudiant actif' : 'Étudiant inactif'}</span>
+                  </div>
+                </div>
+
+                <div className="sco-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInscriptionForm({
+                        ...emptyInscription,
+                        etudiantId: String(selectedEtudiant.id),
+                      });
+                      setTab('inscriptions');
+                    }}
+                  >
+                    Nouvelle inscription
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEtudiantId(null)}
+                  >
+                    Fermer
+                  </button>
+                </div>
               </section>
 
+              <section className="sco-profile-overview">
+                <article className="sco-profile-stat">
+                  <span>Inscriptions</span>
+                  <strong>{selectedParcours.length}</strong>
+                  <small>Historique académique</small>
+                </article>
+
+                <article className="sco-profile-stat">
+                  <span>Parcours terminés</span>
+                  <strong>{selectedCompletedCount}</strong>
+                  <small>Années finalisées</small>
+                </article>
+
+                <article className="sco-profile-stat">
+                  <span>Situation actuelle</span>
+                  <strong>
+                    {selectedCurrentInscription
+                      ? getNiveau(selectedCurrentInscription.classeId)?.nom ?? 'Niveau'
+                      : 'Non inscrit'}
+                  </strong>
+                  <small>
+                    {selectedCurrentInscription
+                      ? selectedCurrentInscription.anneeAcademique
+                      : 'Aucune inscription'}
+                  </small>
+                </article>
+
+                <article className="sco-profile-stat">
+                  <span>Éligibilité diplôme</span>
+                  <strong>
+                    {eligibiliteLoading
+                      ? 'Vérification...'
+                      : selectedEvaluation
+                        ? selectedEvaluation.eligible
+                          ? 'Éligible'
+                          : 'Non éligible'
+                        : 'Non évaluée'}
+                  </strong>
+                  <small>
+                    {selectedEvaluation?.niveau.terminal
+                      ? 'Niveau terminal'
+                      : 'Selon le parcours terminal'}
+                  </small>
+                </article>
+              </section>
+
+              {selectedCurrentInscription && (
+                <section className="sco-card sco-current-card">
+                  <div className="sco-current-heading">
+                    <div>
+                      <h3>Situation académique actuelle</h3>
+                      <p>Dernière inscription connue dans le parcours étudiant.</p>
+                    </div>
+
+                    <InscriptionStatus statut={selectedCurrentInscription.statut} />
+                  </div>
+
+                  <div className="sco-current-grid">
+                    <div className="sco-current-item">
+                      <span>Formation</span>
+                      <strong>
+                        {getFormation(selectedCurrentInscription.classeId)?.nom ?? '-'}
+                      </strong>
+                    </div>
+
+                    <div className="sco-current-item">
+                      <span>Niveau</span>
+                      <strong>
+                        {getNiveau(selectedCurrentInscription.classeId)?.nom ?? '-'}
+                      </strong>
+                    </div>
+
+                    <div className="sco-current-item">
+                      <span>Classe</span>
+                      <strong>
+                        {getClasse(selectedCurrentInscription)?.nom ?? '-'}
+                      </strong>
+                    </div>
+
+                    <div className="sco-current-item">
+                      <span>Année académique</span>
+                      <strong>{selectedCurrentInscription.anneeAcademique}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 10 }}>
+                    {eligibiliteLoading ? (
+                      <span className="sco-eligibility neutral">
+                        Vérification de l’éligibilité...
+                      </span>
+                    ) : selectedEvaluation ? (
+                      <span
+                        className={
+                          selectedEvaluation.eligible
+                            ? 'sco-eligibility good'
+                            : 'sco-eligibility warn'
+                        }
+                      >
+                        {selectedEvaluation.eligible
+                          ? 'Éligible au diplôme'
+                          : 'Non éligible au diplôme'}
+                      </span>
+                    ) : (
+                      <span className="sco-eligibility neutral">
+                        Éligibilité non évaluée pour cette inscription
+                      </span>
+                    )}
+                  </div>
+                </section>
+              )}
+
               {selectedParcours.length === 0 ? (
-                <article className="sco-card sco-empty"><strong>Aucun parcours académique enregistré.</strong></article>
+                <article className="sco-card sco-empty">
+                  <strong>Aucun parcours académique enregistré.</strong>
+                </article>
               ) : selectedParcours.map((item) => {
                 const classe = getClasse(item);
                 const niveau = getNiveau(item.classeId);
                 const formation = getFormation(item.classeId);
+                const evaluation =
+                  eligibilite?.evaluations.find(
+                    (entry) =>
+                      entry.inscription.id === item.id,
+                  );
+
                 return (
                   <article className="sco-timeline-card" key={item.id}>
-                    <div className="sco-timeline-year">{item.anneeAcademique}</div>
-                    <div><div style={{display:'flex',justifyContent:'space-between',gap:12}}><div><h3>{formation?.nom ?? 'Formation'}</h3><p>{niveau?.nom ?? '-'} · {classe?.nom ?? '-'}</p></div><InscriptionStatus statut={item.statut} /></div><div className="sco-timeline-meta"><span>Classe : {classe?.code ?? '-'}</span><span>Niveau : {niveau?.code ?? '-'}</span><span>Formation : {formation?.code ?? '-'}</span></div></div>
+                    <div className="sco-timeline-year">
+                      {item.anneeAcademique}
+                    </div>
+
+                    <div>
+                      <div className="sco-timeline-head">
+                        <div>
+                          <h3>{formation?.nom ?? 'Formation'}</h3>
+                          <p>{niveau?.nom ?? '-'} · {classe?.nom ?? '-'}</p>
+                        </div>
+
+                        <InscriptionStatus statut={item.statut} />
+                      </div>
+
+                      <div className="sco-timeline-meta">
+                        <span>Classe : {classe?.code ?? '-'}</span>
+                        <span>Niveau : {niveau?.code ?? '-'}</span>
+                        <span>Formation : {formation?.code ?? '-'}</span>
+                        {item.dateInscription && (
+                          <span>Inscription : {formatDate(item.dateInscription)}</span>
+                        )}
+                      </div>
+
+                      <div className="sco-timeline-flags">
+                        {niveau?.terminal && (
+                          <span className="sco-chip">Niveau terminal</span>
+                        )}
+
+                        {evaluation && (
+                          <span
+                            className={
+                              evaluation.eligible
+                                ? 'sco-chip good'
+                                : 'sco-chip warn'
+                            }
+                          >
+                            {evaluation.eligible
+                              ? 'Éligible au diplôme'
+                              : 'Non éligible'}
+                          </span>
+                        )}
+
+                        {evaluation?.validationAcademique && (
+                          <span className="sco-chip">
+                            Crédits : {evaluation.validationAcademique.creditsObtenus ?? 0}
+                            /{evaluation.validationAcademique.creditsRequis ?? 0}
+                          </span>
+                        )}
+
+                        {evaluation?.validationAcademique?.memoireRequis && (
+                          <span
+                            className={
+                              evaluation.validationAcademique.memoireValide
+                                ? 'sco-chip good'
+                                : 'sco-chip warn'
+                            }
+                          >
+                            Mémoire {evaluation.validationAcademique.memoireValide ? 'validé' : 'non validé'}
+                          </span>
+                        )}
+
+                        {evaluation?.validationAcademique?.stageRequis && (
+                          <span
+                            className={
+                              evaluation.validationAcademique.stageValide
+                                ? 'sco-chip good'
+                                : 'sco-chip warn'
+                            }
+                          >
+                            Stage {evaluation.validationAcademique.stageValide ? 'validé' : 'non validé'}
+                          </span>
+                        )}
+                      </div>
+
+                      {evaluation && !evaluation.eligible && evaluation.motifs.length > 0 && (
+                        <ul className="sco-eligibility-reasons">
+                          {evaluation.motifs.slice(0, 4).map((motif) => (
+                            <li key={motif}>
+                              {eligibilityReasonLabel(motif)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </article>
                 );
               })}
@@ -694,7 +1036,48 @@ export function ScolaritePage() {
 
 function InscriptionStatus({ statut }: { statut: string }) {
   const normalized = statut.toLowerCase();
-  return <span className={`sco-status ${normalized === 'active' ? 'active' : normalized === 'terminee' ? 'active' : 'inactive'}`}>{statut}</span>;
+
+  const labels: Record<string, string> = {
+    ACTIVE: 'Active',
+    SUSPENDUE: 'Suspendue',
+    ABANDONNEE: 'Abandonnée',
+    TERMINEE: 'Terminée',
+  };
+
+  return (
+    <span
+      className={`sco-status ${
+        normalized === 'active' || normalized === 'terminee'
+          ? 'active'
+          : 'inactive'
+      }`}
+    >
+      {labels[statut] ?? statut}
+    </span>
+  );
+}
+
+function eligibilityReasonLabel(code: string) {
+  const labels: Record<string, string> = {
+    NIVEAU_NON_TERMINAL:
+      'Le niveau n’est pas terminal.',
+    INSCRIPTION_NON_TERMINEE:
+      'L’inscription doit être terminée.',
+    VALIDATION_ACADEMIQUE_ABSENTE:
+      'La validation académique est absente.',
+    DECISION_ACADEMIQUE_NON_ADMISE:
+      'La décision académique n’est pas ADMIS.',
+    CREDITS_INSUFFISANTS:
+      'Le nombre de crédits requis n’est pas atteint.',
+    STAGE_NON_VALIDE:
+      'Le stage requis n’est pas validé.',
+    MEMOIRE_NON_VALIDE:
+      'Le mémoire requis n’est pas validé.',
+    DATE_DELIBERATION_ABSENTE:
+      'La date de délibération est absente.',
+  };
+
+  return labels[code] ?? code;
 }
 
 function formatDate(value: string) {
