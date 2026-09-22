@@ -117,7 +117,7 @@ export class ImportEtudiantsService {
 
     if (!classe) {
       throw new NotFoundException(
-        'Classe acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mique introuvable',
+        'Classe académique introuvable',
       );
     }
 
@@ -168,7 +168,7 @@ export class ImportEtudiantsService {
 
     if (etudiantMatricule) {
       throw new ConflictException(
-        'Ce numÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ro de carte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant / matricule existe dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â ',
+        'Ce numéro de carte étudiant / matricule existe déjà',
       );
     }
 
@@ -177,7 +177,7 @@ export class ImportEtudiantsService {
       utilisateurEmail
     ) {
       throw new ConflictException(
-        'Cette adresse e-mail existe dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â ',
+        'Cette adresse e-mail existe déjà',
       );
     }
 
@@ -262,14 +262,14 @@ export class ImportEtudiantsService {
         from,
         to: email,
         subject:
-          'CrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ation de votre compte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant',
+          'Création de votre compte étudiant',
 
         text:
           'Bonjour ' +
           nomAffichage +
           ',\n\n' +
-          'Votre compte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant a ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© crÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.\n\n' +
-          'Matricule / numÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ro de carte : ' +
+          'Votre compte étudiant a été créé.\n\n' +
+          'Matricule / numéro de carte : ' +
           matricule +
           '\n' +
           'Identifiant : ' +
@@ -278,7 +278,7 @@ export class ImportEtudiantsService {
           'Mot de passe temporaire : ' +
           motDePasseTemporaire +
           '\n\n' +
-          'Veuillez modifier votre mot de passe aprÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨s votre premiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨re connexion.\n',
+          'Veuillez modifier votre mot de passe après votre première connexion.\n',
       });
 
       return {
@@ -318,7 +318,7 @@ export class ImportEtudiantsService {
 
     if (!role) {
       throw new NotFoundException(
-        'Le rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´le ETUDIANT est introuvable. Synchronisez le rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©fÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rentiel de sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©curitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©.',
+        'Le rôle ETUDIANT est introuvable. Synchronisez le référentiel de sécurité.',
       );
     }
 
@@ -601,12 +601,12 @@ export class ImportEtudiantsService {
 
     instructions.addRow({
       texte:
-        'Chaque ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant doit possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©der un matricule unique correspondant ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  son numÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ro de carte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant.',
+        'Chaque étudiant doit posséder un matricule unique correspondant à son numéro de carte étudiant.',
     });
 
     instructions.addRow({
       texte:
-        'LÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢adresse e-mail est obligatoire car elle sert ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  crÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©er le compte ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiant.',
+        'L’adresse e-mail est obligatoire car elle sert à créer le compte étudiant.',
     });
 
     instructions.addRow({
@@ -616,7 +616,7 @@ export class ImportEtudiantsService {
 
     instructions.addRow({
       texte:
-        'Format de date recommandÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© : AAAA-MM-JJ.',
+        'Format de date recommandé : AAAA-MM-JJ.',
     });
 
     const buffer =
@@ -829,7 +829,7 @@ export class ImportEtudiantsService {
 
       if (!prenom) {
         erreurs.push(
-          'PrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©nom obligatoire',
+          'Prénom obligatoire',
         );
       }
 
@@ -918,7 +918,7 @@ export class ImportEtudiantsService {
         rows.length > 1000
       ) {
         throw new BadRequestException(
-          'Maximum 1000 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tudiants par fichier',
+          'Maximum 1000 étudiants par fichier',
         );
       }
     }
@@ -1024,7 +1024,7 @@ export class ImportEtudiantsService {
         )
       ) {
         row.erreurs.push(
-          'Matricule dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  enregistrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©',
+          'Matricule déjà enregistré',
         );
       }
 
@@ -1034,7 +1034,7 @@ export class ImportEtudiantsService {
         )
       ) {
         row.erreurs.push(
-          'E-mail dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©jÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  enregistrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©',
+          'E-mail déjà enregistré',
         );
       }
     }
@@ -1065,7 +1065,7 @@ export class ImportEtudiantsService {
         )
     ) {
       throw new BadRequestException(
-        'Seuls les fichiers .xlsx sont acceptÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©s',
+        'Seuls les fichiers .xlsx sont acceptés',
       );
     }
 
