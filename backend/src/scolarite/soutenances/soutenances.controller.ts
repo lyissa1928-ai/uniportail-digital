@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 
@@ -68,6 +69,48 @@ export class SoutenancesController {
   findAll() {
     return this.service
       .findAll();
+  }
+
+  @Get('planning')
+  @Permissions(
+    'ELIGIBILITE_CONSULTER',
+  )
+  planning(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .planning(
+        annee,
+      );
+  }
+
+  @Get('terminees')
+  @Permissions(
+    'ELIGIBILITE_CONSULTER',
+  )
+  terminees(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .terminees(
+        annee,
+      );
+  }
+
+  @Get('rapport')
+  @Permissions(
+    'REPORTING_CONSULTER',
+  )
+  rapport(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .rapport(
+        annee,
+      );
   }
 
   @Get(':id')
