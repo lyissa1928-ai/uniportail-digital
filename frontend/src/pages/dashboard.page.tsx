@@ -12,6 +12,10 @@ import {
   api,
 } from '../lib/api';
 
+import {
+  useAuth,
+} from '../auth/auth-context';
+
 import './dashboard-premium.css';
 
 type AnyItem = Record<string, any>;
@@ -349,6 +353,28 @@ export function DashboardPage() {
   const navigate =
     useNavigate();
 
+  const {
+    user,
+  } =
+    useAuth();
+
+  const displayName =
+    user?.nomAffichage ??
+    user?.email ??
+    'Utilisateur';
+
+  const firstName =
+    displayName
+      .trim()
+      .split(/\s+/)[0] ??
+    displayName;
+
+  const primaryRole =
+    user?.roles?.[0]
+      ?.replaceAll('_', ' ')
+      .toLowerCase() ??
+    'utilisateur';
+
   const [
     data,
     setData,
@@ -545,25 +571,37 @@ export function DashboardPage() {
 
   return (
     <main className="premium-dashboard">
-      <section className="premium-dashboard-heading">
-        <div>
-          <span className="premium-eyebrow">
+      <section className="premium-home-hero">
+        <div className="premium-home-hero-copy">
+          <span className="premium-home-kicker">
             Pilotage académique
           </span>
 
           <h1>
-            Tableau de bord
+            Bonjour {firstName},
           </h1>
 
           <p>
-            Vue consolidée du suivi académique
-            et administratif.
+            Voici une vue claire de l’activité académique, pédagogique et administrative de la plateforme.
           </p>
+
+          <div className="premium-home-meta">
+            <span>
+              <i className="premium-live-dot" />
+              Session active
+            </span>
+
+            <span>
+              {primaryRole}
+            </span>
+          </div>
         </div>
 
-        <div className="premium-heading-actions">
-          <div className="premium-academic-year">
-            <Icon name="calendar" />
+        <div className="premium-home-hero-side">
+          <div className="premium-home-year-card">
+            <span className="premium-home-year-icon">
+              <Icon name="calendar" />
+            </span>
 
             <div>
               <span>
@@ -577,7 +615,7 @@ export function DashboardPage() {
           </div>
 
           <button
-            className="premium-refresh"
+            className="premium-home-refresh"
             type="button"
             disabled={loading}
             onClick={
@@ -586,11 +624,28 @@ export function DashboardPage() {
           >
             <Icon name="refresh" />
 
-            {loading
-              ? 'Actualisation...'
-              : 'Actualiser'}
+            <span>
+              {loading
+                ? 'Actualisation...'
+                : 'Actualiser les données'}
+            </span>
           </button>
+
+          <small>
+            {refreshedAt
+              ? `Dernière mise à jour à ${refreshedAt.toLocaleTimeString(
+                  'fr-FR',
+                  {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )}`
+              : 'Synchronisation des données en cours'}
+          </small>
         </div>
+
+        <div className="premium-home-hero-orb premium-home-hero-orb-one" />
+        <div className="premium-home-hero-orb premium-home-hero-orb-two" />
       </section>
 
       <section className="premium-kpi-grid">
@@ -1039,7 +1094,7 @@ export function DashboardPage() {
 
       <footer className="premium-dashboard-footer">
         <span>
-          © 2026 Suivi Évaluation
+          © 2026 UniPortail Digital
         </span>
 
         <span>
