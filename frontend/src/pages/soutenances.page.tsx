@@ -354,7 +354,7 @@ export function SoutenancesPage() {
               `/soutenances/terminees?annee=${encodeURIComponent(annee)}`,
             ),
             api<unknown>(
-              '/inscriptions',
+              `/soutenances/candidats?annee=${encodeURIComponent(annee)}`,
             ),
             api<unknown>(
               '/classes',
