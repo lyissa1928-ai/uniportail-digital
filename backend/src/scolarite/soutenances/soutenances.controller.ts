@@ -71,6 +71,20 @@ export class SoutenancesController {
       .findAll();
   }
 
+  @Get('candidats')
+  @Permissions(
+    'ELIGIBILITE_CONSULTER',
+  )
+  candidats(
+    @Query('annee')
+    annee?: string,
+  ) {
+    return this.service
+      .candidats(
+        annee,
+      );
+  }
+
   @Get('planning')
   @Permissions(
     'ELIGIBILITE_CONSULTER',
