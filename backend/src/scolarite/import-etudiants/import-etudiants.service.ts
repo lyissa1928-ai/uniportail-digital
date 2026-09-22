@@ -19,6 +19,10 @@ import {
 } from 'node:crypto';
 
 import {
+  readFileSync,
+} from 'node:fs';
+
+import {
   PrismaService,
 } from '../../prisma/prisma.service.js';
 
@@ -236,10 +240,32 @@ export class ImportEtudiantsService {
         'SMTP_USER',
       );
 
-    const password =
+    const passwordFile =
+      this.config.get<string>(
+        'SMTP_PASSWORD_FILE',
+      );
+
+    let password =
       this.config.get<string>(
         'SMTP_PASSWORD',
       );
+
+    if (passwordFile) {
+      try {
+        password =
+          readFileSync(
+            passwordFile,
+            'utf8',
+          ).trimEnd();
+      }
+      catch {
+        return {
+          envoye: false,
+          statut:
+            'SMTP_SECRET_INACCESSIBLE',
+        };
+      }
+    }
 
     const auth =
       user
@@ -256,6 +282,23 @@ export class ImportEtudiantsService {
           port,
           secure,
           auth,
+
+          connectionTimeout:
+            10000,
+
+          greetingTimeout:
+            10000,
+
+          socketTimeout:
+            20000,
+
+          tls: {
+            minVersion:
+              'TLSv1.2',
+
+            servername:
+              host,
+          },
         });
 
       await transporter.sendMail({
