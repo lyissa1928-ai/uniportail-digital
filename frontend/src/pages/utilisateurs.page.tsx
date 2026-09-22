@@ -10,6 +10,8 @@ import {
   ApiException,
 } from '../lib/api';
 
+import { ActualitesManager } from '../components/actualites-manager';
+
 import { AjouterUtilisateurPanel } from '../components/ajouter-utilisateur-panel';
 
 interface Role {
@@ -718,6 +720,8 @@ export function UtilisateursPage() {
         </article>
 
       </section>
+
+      <ActualitesManager />
 
     </div>
   );
