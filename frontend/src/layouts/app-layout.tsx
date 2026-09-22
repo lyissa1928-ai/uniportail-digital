@@ -54,6 +54,17 @@ const navigation:
 
     {
       label:
+        'Soutenances',
+      path:
+        '/soutenances',
+      anyPermission: [
+        'ELIGIBILITE_CONSULTER',
+        'ELIGIBILITE_GERER',
+      ],
+    },
+
+    {
+      label:
         'QHSE',
       path:
         '/qhse',
