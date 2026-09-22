@@ -36,6 +36,10 @@ import {
 } from './pages/pedagogie.page';
 
 import {
+  SoutenancesPage,
+} from './pages/soutenances.page';
+
+import {
   QhsePage,
 } from './pages/qhse.page';
 
@@ -136,6 +140,21 @@ export const router =
                   permission="SEANCES_VALIDER"
                 >
                   <PedagogiePage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/soutenances',
+
+              element: (
+                <RequireAccess
+                  anyPermission={[
+                    'ELIGIBILITE_CONSULTER',
+                    'ELIGIBILITE_GERER',
+                  ]}
+                >
+                  <SoutenancesPage />
                 </RequireAccess>
               ),
             },
