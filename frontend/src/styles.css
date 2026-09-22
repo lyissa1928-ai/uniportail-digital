@@ -21305,3 +21305,272 @@ tbody tr:hover {
 /* ============================================================
    LOGIN PRO V2 END
    ============================================================ */
+
+
+/* ============================================================
+   BRANDING ADMIN + LOGIN DYNAMIC START
+   ============================================================ */
+
+.login-pro-campus {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.02);
+}
+
+.login-pro-campus-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(4, 22, 46, .94) 0%,
+      rgba(7, 35, 69, .86) 46%,
+      rgba(8, 48, 91, .58) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(5, 24, 49, .28),
+      rgba(3, 20, 41, .68)
+    );
+}
+
+.login-pro-logo {
+  z-index: 4;
+}
+
+.login-pro-logo-image {
+  width: min(290px, 70%);
+  height: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 5px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+.login-pro-public-quote {
+  position: absolute;
+  left: 50%;
+  bottom: 66px;
+  z-index: 4;
+  width: min(82%, 470px);
+  transform: translateX(-50%);
+  color: #42658c;
+  font-size: 10px;
+  font-style: italic;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.branding-admin {
+  gap: 18px;
+}
+
+.branding-admin-hero {
+  min-height: 154px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px;
+  border: 1px solid #dce6f1;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(37,121,235,.12), transparent 32%),
+    linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+  box-shadow: 0 12px 34px rgba(17,50,88,.05);
+}
+
+.branding-admin-hero h1 {
+  margin: 6px 0 8px;
+  color: #0b2340;
+  font-size: 30px;
+  letter-spacing: -.03em;
+}
+
+.branding-admin-hero p {
+  max-width: 680px;
+  margin: 0;
+  color: #6e8198;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.branding-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(330px, .85fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.branding-form-panel,
+.branding-media-card {
+  border-radius: 16px;
+}
+
+.branding-panel-heading h2 {
+  margin: 0;
+  color: #0c2748;
+  font-size: 17px;
+}
+
+.branding-panel-heading p {
+  margin: 5px 0 0;
+  color: #7a8ca1;
+  font-size: 10px;
+}
+
+.branding-form-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.branding-form-grid label {
+  color: #294866;
+  font-size: 10px;
+  font-weight: 780;
+}
+
+.branding-form-grid input,
+.branding-form-grid textarea {
+  border-color: #d4e0ec;
+  background: #fbfdff;
+  font-size: 11px;
+}
+
+.branding-save {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.branding-media-column {
+  display: grid;
+  gap: 18px;
+}
+
+.branding-logo-preview,
+.branding-hero-preview {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid #dce6f1;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, #0b2848, #0e3b68);
+}
+
+.branding-logo-preview {
+  min-height: 124px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.branding-logo-preview img {
+  width: min(100%, 330px);
+  height: auto;
+  display: block;
+}
+
+.branding-hero-preview {
+  aspect-ratio: 16 / 10;
+}
+
+.branding-hero-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.branding-logo-preview > span,
+.branding-hero-preview > span {
+  color: #9bb0c6;
+  font-size: 10px;
+}
+
+.branding-upload-button {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  border: 1px solid #cddbea;
+  border-radius: 9px;
+  background: #f7faff;
+  color: #174b7c;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.branding-upload-button:hover {
+  border-color: #9fc2e8;
+  background: #eff6ff;
+}
+
+.branding-upload-button input {
+  display: none;
+}
+
+.branding-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.branding-meta > div {
+  padding: 12px 14px;
+  border: 1px solid #e2e9f1;
+  border-radius: 10px;
+  background: #f9fbfd;
+}
+
+.branding-meta span,
+.branding-meta strong {
+  display: block;
+}
+
+.branding-meta span {
+  color: #8292a5;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.branding-meta strong {
+  margin-top: 4px;
+  color: #203f60;
+  font-size: 10px;
+}
+
+@media (max-width: 980px) {
+  .branding-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .branding-admin-hero {
+    flex-direction: column;
+  }
+
+  .branding-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .login-pro-public-quote {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 24px;
+  }
+}
+
+/* ============================================================
+   BRANDING ADMIN + LOGIN DYNAMIC END
+   ============================================================ */
