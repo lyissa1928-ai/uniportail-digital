@@ -246,6 +246,26 @@ function HeroTitle({
 }: {
   value: string;
 }) {
+  if (
+    value
+      .trim()
+      .toLocaleLowerCase(
+        'fr-FR',
+      ) ===
+    'un suivi rigoureux pour une réussite durable'
+  ) {
+    return (
+      <>
+        Un suivi rigoureux
+        <br />
+        pour une{' '}
+        <em>
+          réussite durable
+        </em>
+      </>
+    );
+  }
+
   const marker =
     'réussite durable';
 
