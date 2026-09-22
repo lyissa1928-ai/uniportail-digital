@@ -643,6 +643,8 @@ export function SoutenancesPage() {
           ...updatePayload
         } = payload;
 
+        void _inscriptionId;
+
         await api(
           `/soutenances/${editingId}`,
           {
