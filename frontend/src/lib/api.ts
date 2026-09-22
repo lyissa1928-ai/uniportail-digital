@@ -76,7 +76,8 @@ export async function api<T>(
     options.body &&
     !headers.has(
       'Content-Type',
-    )
+    ) &&
+    !(options.body instanceof FormData)
   ) {
     headers.set(
       'Content-Type',
