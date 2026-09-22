@@ -452,14 +452,26 @@ enum DecisionSoutenance {
   REFUSE
 }
 
+enum StatutSoutenance {
+  PLANIFIEE
+  TENUE
+  REPORTEE
+  ANNULEE
+}
+
 model Soutenance {
   id Int @id @default(autoincrement())
 
   sujet          String
   dateSoutenance DateTime
+  heureDebut     String?
+  heureFin       String?
+  lieu           String?
+  statut         StatutSoutenance   @default(PLANIFIEE)
   decision       DecisionSoutenance @default(EN_ATTENTE)
 
   note          Float?
+  mention       String?
   numeroPv      String?
   presidentJury String?
   membresJury   String?
@@ -475,6 +487,7 @@ model Soutenance {
   inscriptionId Int                 @unique
   inscription   InscriptionEtudiant @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
 
+  @@index([statut])
   @@index([decision])
   @@index([validee])
   @@index([dateSoutenance])
