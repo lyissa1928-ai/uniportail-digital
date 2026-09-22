@@ -24,6 +24,23 @@ type PublicBranding = {
   heroImageUrl: string;
 };
 
+type PublicActualite = {
+  id: number;
+  titre: string;
+  resume: string;
+  contenu?: string | null;
+  imageUrl?: string | null;
+  source:
+    | 'PEDAGOGIE'
+    | 'SCOLARITE'
+    | 'ADMINISTRATION';
+  dateDebut: string;
+  dateFin: string;
+  auteur?: {
+    nomAffichage?: string | null;
+  };
+};
+
 const DEFAULT_BRANDING: PublicBranding = {
   appName: 'UniPortail Digital',
   appSubtitle: 'Suivi & Évaluation Académique',
@@ -224,6 +241,49 @@ const moduleCards = [
   },
 ];
 
+function actualiteSourceLabel(
+  source:
+    PublicActualite['source'],
+) {
+  if (
+    source ===
+    'PEDAGOGIE'
+  ) {
+    return 'Pédagogie';
+  }
+
+  if (
+    source ===
+    'SCOLARITE'
+  ) {
+    return 'Scolarité';
+  }
+
+  return 'Administration';
+}
+
+function actualiteDate(
+  value:
+    string,
+) {
+  const date =
+    new Date(
+      value,
+    );
+
+  return date.toLocaleDateString(
+    'fr-FR',
+    {
+      day:
+        '2-digit',
+      month:
+        'short',
+      year:
+        'numeric',
+    },
+  );
+}
+
 const audiences = [
   {
     icon:
@@ -276,6 +336,14 @@ export function HomePage() {
       DEFAULT_BRANDING,
     );
 
+  const [
+    actualites,
+    setActualites,
+  ] =
+    useState<PublicActualite[]>(
+      [],
+    );
+
   useEffect(
     () => {
       let mounted =
@@ -299,6 +367,47 @@ export function HomePage() {
               setBranding(
                 DEFAULT_BRANDING,
               );
+            }
+          },
+        );
+
+      return () => {
+        mounted =
+          false;
+      };
+    },
+    [],
+  );
+
+  useEffect(
+    () => {
+      let mounted =
+        true;
+
+      void api<PublicActualite[]>(
+        '/actualites/public?limit=3',
+      )
+        .then(
+          (result) => {
+            if (
+              mounted
+            ) {
+              setActualites(
+                Array.isArray(
+                  result,
+                )
+                  ? result
+                  : [],
+              );
+            }
+          },
+        )
+        .catch(
+          () => {
+            if (
+              mounted
+            ) {
+              setActualites([]);
             }
           },
         );
@@ -563,28 +672,101 @@ export function HomePage() {
         </div>
       </section>
 
-      <section
-        id="actualites"
-        className="public-info-strip"
-      >
-        <div>
-          <strong>
-            Une gestion académique plus claire
-          </strong>
-
-          <span>
-            Centralisation, traçabilité, sécurité et pilotage dans un seul environnement.
-          </span>
-        </div>
-
-        <Link
-          to="/login"
-          className="public-info-cta"
+      {actualites.length > 0 && (
+        <section
+          id="actualites"
+          className="public-news"
         >
-          Découvrir mon espace
-          <Icon name="arrow" />
-        </Link>
-      </section>
+          <div className="public-news-heading">
+            <div>
+              <span className="public-section-kicker">
+                Informations récentes
+              </span>
+
+              <h2>
+                Actualités
+              </h2>
+
+              <p>
+                Les informations publiées par les services de la plateforme.
+              </p>
+            </div>
+
+            <span className="public-news-live">
+              Mise à jour en temps réel
+            </span>
+          </div>
+
+          <div className="public-news-grid">
+            {actualites.map(
+              (item) => (
+                <article
+                  className="public-news-card"
+                  key={
+                    item.id
+                  }
+                >
+                  <div className="public-news-media">
+                    {item.imageUrl
+                      ? (
+                        <img
+                          src={
+                            item.imageUrl
+                          }
+                          alt=""
+                        />
+                      )
+                      : (
+                        <span className="public-news-placeholder">
+                          <Icon name="file" />
+                        </span>
+                      )}
+
+                    <span className="public-news-source">
+                      {actualiteSourceLabel(
+                        item.source,
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="public-news-body">
+                    <span className="public-news-date">
+                      {actualiteDate(
+                        item.dateDebut,
+                      )}
+                    </span>
+
+                    <h3>
+                      {item.titre}
+                    </h3>
+
+                    <p>
+                      {item.resume}
+                    </p>
+
+                    <div className="public-news-footer">
+                      <span>
+                        {item.auteur
+                          ?.nomAffichage ??
+                          actualiteSourceLabel(
+                            item.source,
+                          )}
+                      </span>
+
+                      <span>
+                        Visible jusqu’au{' '}
+                        {actualiteDate(
+                          item.dateFin,
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ),
+            )}
+          </div>
+        </section>
+      )}
 
       <footer
         id="contact"
