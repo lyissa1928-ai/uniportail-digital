@@ -328,6 +328,22 @@ export function ActualitesManager({
     return null;
   }
 
+  function canEditItem(
+    item:
+      Actualite,
+  ) {
+    return (
+      item.auteur?.id ===
+        user?.id ||
+      user?.roles?.includes(
+        'SUPER_ADMIN',
+      ) ||
+      user?.roles?.includes(
+        'ADMIN',
+      )
+    );
+  }
+
   async function submit(
     event:
       FormEvent<HTMLFormElement>,
@@ -764,36 +780,40 @@ export function ActualitesManager({
                             )}
                         </small>
 
-                        <div className="news-manager-actions">
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={
-                              () =>
-                                void toggle(
-                                  item,
-                                )
-                            }
-                          >
-                            {item.publiee
-                              ? 'Masquer'
-                              : 'Publier'}
-                          </button>
+                        {canEditItem(
+                          item,
+                        ) && (
+                          <div className="news-manager-actions">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={
+                                () =>
+                                  void toggle(
+                                    item,
+                                  )
+                              }
+                            >
+                              {item.publiee
+                                ? 'Masquer'
+                                : 'Publier'}
+                            </button>
 
-                          <button
-                            type="button"
-                            className="danger"
-                            disabled={busy}
-                            onClick={
-                              () =>
-                                void remove(
-                                  item,
-                                )
-                            }
-                          >
-                            Supprimer
-                          </button>
-                        </div>
+                            <button
+                              type="button"
+                              className="danger"
+                              disabled={busy}
+                              onClick={
+                                () =>
+                                  void remove(
+                                    item,
+                                  )
+                              }
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </article>
                   );
