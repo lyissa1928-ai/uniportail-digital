@@ -1,3 +1,7 @@
+import {
+  type ReactNode,
+} from 'react';
+
 import { PasswordChangeGate } from '../components/password-change-gate';
 
 import {
@@ -164,7 +168,7 @@ function NavIcon({
   const paths:
     Record<
       NavigationIcon,
-      JSX.Element
+      ReactNode
     > = {
       dashboard: (
         <>
