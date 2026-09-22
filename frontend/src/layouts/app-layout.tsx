@@ -1,4 +1,7 @@
 import {
+  useEffect,
+  useMemo,
+  useState,
   type ReactNode,
 } from 'react';
 
@@ -10,6 +13,10 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router';
+
+import {
+  api,
+} from '../lib/api';
 
 import {
   useAuth,
@@ -26,12 +33,19 @@ type NavigationIcon =
   | 'diplomes'
   | 'audit'
   | 'utilisateurs'
-  | 'profil';
+  | 'profil'
+  | 'notifications';
+
+type NavigationGroup =
+  | 'general'
+  | 'administration'
+  | 'espace';
 
 interface NavigationItem {
   label: string;
   path: string;
   icon: NavigationIcon;
+  group: NavigationGroup;
   permission?: string;
   anyPermission?: string[];
 }
@@ -45,6 +59,8 @@ const navigation:
         '/dashboard',
       icon:
         'dashboard',
+      group:
+        'general',
     },
 
     {
@@ -54,6 +70,8 @@ const navigation:
         '/referentiel',
       icon:
         'referentiel',
+      group:
+        'general',
       permission:
         'REFERENTIEL_CONSULTER',
     },
@@ -65,6 +83,8 @@ const navigation:
         '/enseignements',
       icon:
         'enseignements',
+      group:
+        'general',
       permission:
         'ENSEIGNEMENTS_CONSULTER',
     },
@@ -76,6 +96,8 @@ const navigation:
         '/pedagogie',
       icon:
         'pedagogie',
+      group:
+        'general',
       permission:
         'SEANCES_VALIDER',
     },
@@ -87,6 +109,8 @@ const navigation:
         '/soutenances',
       icon:
         'soutenances',
+      group:
+        'general',
       anyPermission: [
         'ELIGIBILITE_CONSULTER',
         'ELIGIBILITE_GERER',
@@ -100,6 +124,8 @@ const navigation:
         '/qhse',
       icon:
         'qhse',
+      group:
+        'general',
       permission:
         'QHSE_CONSULTER',
     },
@@ -111,6 +137,8 @@ const navigation:
         '/scolarite',
       icon:
         'scolarite',
+      group:
+        'general',
       permission:
         'SCOLARITE_GERER',
     },
@@ -122,6 +150,8 @@ const navigation:
         '/diplomes',
       icon:
         'diplomes',
+      group:
+        'general',
       anyPermission: [
         'DIPLOMES_GERER',
         'DIPLOME_DEMANDER',
@@ -135,6 +165,8 @@ const navigation:
         '/audit',
       icon:
         'audit',
+      group:
+        'administration',
       permission:
         'AUDIT_CONSULTER',
     },
@@ -146,8 +178,21 @@ const navigation:
         '/utilisateurs',
       icon:
         'utilisateurs',
+      group:
+        'administration',
       permission:
         'UTILISATEURS_GERER',
+    },
+
+    {
+      label:
+        'Notifications',
+      path:
+        '/notifications',
+      icon:
+        'notifications',
+      group:
+        'espace',
     },
 
     {
@@ -157,6 +202,8 @@ const navigation:
         '/me',
       icon:
         'profil',
+      group:
+        'espace',
     },
   ];
 
@@ -181,32 +228,33 @@ function NavIcon({
 
       referentiel: (
         <>
+          <ellipse cx="12" cy="5" rx="7" ry="3" />
+          <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5" />
+          <path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
+        </>
+      ),
+
+      enseignements: (
+        <>
           <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" />
           <path d="M4 5.5v16" />
           <path d="M8 7h8M8 11h8" />
         </>
       ),
 
-      enseignements: (
-        <>
-          <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" />
-          <path d="M4 5v16M8 7h7M8 11h7" />
-        </>
-      ),
-
       pedagogie: (
         <>
-          <circle cx="9" cy="8" r="3" />
-          <path d="M3.5 20v-1.5A5.5 5.5 0 0 1 9 13a5.5 5.5 0 0 1 3.6 1.35" />
-          <path d="m15 17 2 2 4-5" />
+          <path d="m3 9 9-5 9 5-9 5z" />
+          <path d="M7 12v4c3 2 7 2 10 0v-4" />
         </>
       ),
 
       soutenances: (
         <>
-          <circle cx="12" cy="8" r="4" />
-          <path d="m9.5 11.2-1 9 3.5-2 3.5 2-1-9" />
-          <path d="M9 8h6" />
+          <circle cx="8" cy="9" r="3" />
+          <circle cx="16.5" cy="9.5" r="2.5" />
+          <path d="M2.5 20v-1.5A5.5 5.5 0 0 1 8 13a5.5 5.5 0 0 1 5.5 5.5V20" />
+          <path d="M14 14a4.5 4.5 0 0 1 7.5 3.5V20" />
         </>
       ),
 
@@ -219,17 +267,16 @@ function NavIcon({
 
       scolarite: (
         <>
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <circle cx="9" cy="10" r="2.5" />
-          <path d="M5.5 17a3.5 3.5 0 0 1 7 0M15 9h3M15 13h3M15 17h3" />
+          <rect x="4" y="3" width="16" height="18" rx="2" />
+          <circle cx="9" cy="9" r="2.2" />
+          <path d="M6 16a3 3 0 0 1 6 0M14.5 8H18M14.5 12H18M14.5 16H18" />
         </>
       ),
 
       diplomes: (
         <>
-          <path d="m3 8 9-5 9 5-9 5z" />
-          <path d="M7 11v5c3 2 7 2 10 0v-5" />
-          <path d="M21 8v7" />
+          <circle cx="12" cy="9" r="5" />
+          <path d="m9 13-1 8 4-2 4 2-1-8" />
         </>
       ),
 
@@ -237,7 +284,6 @@ function NavIcon({
         <>
           <path d="M9 4h6l1 2h3v15H5V6h3z" />
           <path d="M9 11h6M9 15h6" />
-          <path d="m7.5 10.8.7.7 1.3-1.5" />
         </>
       ),
 
@@ -254,6 +300,13 @@ function NavIcon({
         <>
           <circle cx="12" cy="8" r="4" />
           <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+        </>
+      ),
+
+      notifications: (
+        <>
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M10 21h4" />
         </>
       ),
     };
@@ -274,6 +327,26 @@ function NavIcon({
         {paths[name]}
       </svg>
     </span>
+  );
+}
+
+function SvgIcon({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
   );
 }
 
@@ -302,6 +375,74 @@ function initiales(
     .toUpperCase();
 }
 
+function roleLabel(
+  value?: string,
+) {
+  if (!value) {
+    return 'Utilisateur';
+  }
+
+  const labels:
+    Record<string, string> = {
+      SUPER_ADMIN:
+        'Super admin',
+      ADMIN:
+        'Administrateur',
+      DIRECTEUR:
+        'Directeur',
+      DIRECTEUR_ETUDES:
+        'Directeur des études',
+      PEDAGOGIE:
+        'Responsable pédagogique',
+      SCOLARITE:
+        'Scolarité',
+      ENSEIGNANT:
+        'Enseignant',
+      ETUDIANT:
+        'Étudiant',
+    };
+
+  return (
+    labels[value] ??
+    value
+      .replaceAll(
+        '_',
+        ' ',
+      )
+      .toLowerCase()
+  );
+}
+
+function extractUnread(
+  value: unknown,
+) {
+  if (
+    value &&
+    typeof value ===
+      'object'
+  ) {
+    const record =
+      value as Record<
+        string,
+        unknown
+      >;
+
+    const count =
+      record.nonLues ??
+      record.count ??
+      record.total;
+
+    if (
+      typeof count ===
+      'number'
+    ) {
+      return count;
+    }
+  }
+
+  return 0;
+}
+
 export function AppLayout() {
   const {
     user,
@@ -313,6 +454,55 @@ export function AppLayout() {
 
   const location =
     useLocation();
+
+  const [
+    sidebarCollapsed,
+    setSidebarCollapsed,
+  ] =
+    useState(false);
+
+  const [
+    unread,
+    setUnread,
+  ] =
+    useState(0);
+
+  useEffect(
+    () => {
+      let mounted =
+        true;
+
+      void api<unknown>(
+        '/notifications/me/compteur',
+      )
+        .then(
+          (result) => {
+            if (mounted) {
+              setUnread(
+                extractUnread(
+                  result,
+                ),
+              );
+            }
+          },
+        )
+        .catch(
+          () => {
+            if (mounted) {
+              setUnread(0);
+            }
+          },
+        );
+
+      return () => {
+        mounted =
+          false;
+      };
+    },
+    [
+      location.pathname,
+    ],
+  );
 
   function allowed(
     item:
@@ -363,16 +553,34 @@ export function AppLayout() {
       allowed,
     );
 
-  const activeItem =
-    visibleNavigation.find(
-      (item) =>
-        location.pathname ===
-          item.path ||
-        location.pathname.startsWith(
-          `${item.path}/`,
-        ),
-    ) ??
-    visibleNavigation[0];
+  const groupedNavigation =
+    useMemo(
+      () => ({
+        general:
+          visibleNavigation.filter(
+            (item) =>
+              item.group ===
+              'general',
+          ),
+
+        administration:
+          visibleNavigation.filter(
+            (item) =>
+              item.group ===
+              'administration',
+          ),
+
+        espace:
+          visibleNavigation.filter(
+            (item) =>
+              item.group ===
+              'espace',
+          ),
+      }),
+      [
+        visibleNavigation,
+      ],
+    );
 
   const displayName =
     user?.nomAffichage ??
@@ -380,18 +588,77 @@ export function AppLayout() {
     'Utilisateur';
 
   const primaryRole =
-    user?.roles?.[0]
-      ?.replaceAll(
-        '_',
-        ' ',
-      ) ??
-    'Utilisateur';
+    roleLabel(
+      user?.roles?.[0],
+    );
+
+  const navGroup = (
+    title: string,
+    items:
+      NavigationItem[],
+  ) => (
+    <div className="shell-nav-group">
+      <div className="shell-nav-title">
+        {title}
+      </div>
+
+      <nav className="navigation navigation-v3">
+        {items.map(
+          (item) => (
+            <NavLink
+              key={
+                item.path
+              }
+              to={
+                item.path
+              }
+              title={
+                sidebarCollapsed
+                  ? item.label
+                  : undefined
+              }
+              className={({
+                isActive,
+              }) =>
+                isActive
+                  ? 'nav-link active'
+                  : 'nav-link'
+              }
+            >
+              <NavIcon
+                name={
+                  item.icon
+                }
+              />
+
+              <span className="nav-label">
+                {item.label}
+              </span>
+
+              <span
+                className="nav-chevron"
+                aria-hidden="true"
+              >
+                ›
+              </span>
+            </NavLink>
+          ),
+        )}
+      </nav>
+    </div>
+  );
 
   return (
-    <div className="app-shell shell-v2">
-      <aside className="sidebar sidebar-v2">
-        <div className="brand brand-v2">
-          <div className="brand-mark">
+    <div
+      className={
+        sidebarCollapsed
+          ? 'app-shell shell-v3 shell-collapsed'
+          : 'app-shell shell-v3'
+      }
+    >
+      <aside className="sidebar sidebar-v3">
+        <div className="brand brand-v3">
+          <div className="brand-mark brand-mark-v3">
             UP
           </div>
 
@@ -406,67 +673,28 @@ export function AppLayout() {
           </div>
         </div>
 
-        <div className="sidebar-context">
-          <span className="sidebar-context-dot" />
-
-          <div>
-            <small>
-              Espace
-            </small>
-
-            <strong>
-              Administration
-            </strong>
-          </div>
-        </div>
-
-        <div className="nav-caption">
-          Navigation
-        </div>
-
-        <nav
-          className="navigation navigation-v2"
-          aria-label="Navigation principale"
-        >
-          {visibleNavigation.map(
-            (item) => (
-              <NavLink
-                key={
-                  item.path
-                }
-                to={
-                  item.path
-                }
-                className={({
-                  isActive,
-                }) =>
-                  isActive
-                    ? 'nav-link active'
-                    : 'nav-link'
-                }
-              >
-                <NavIcon
-                  name={
-                    item.icon
-                  }
-                />
-
-                <span className="nav-label">
-                  {item.label}
-                </span>
-
-                <span
-                  className="nav-chevron"
-                  aria-hidden="true"
-                >
-                  ›
-                </span>
-              </NavLink>
-            ),
+        <div className="shell-nav-scroll">
+          {navGroup(
+            'Général',
+            groupedNavigation.general,
           )}
-        </nav>
 
-        <div className="sidebar-footer sidebar-footer-v2">
+          {groupedNavigation
+            .administration
+            .length > 0 &&
+            navGroup(
+              'Administration',
+              groupedNavigation
+                .administration,
+            )}
+
+          {navGroup(
+            'Mon espace',
+            groupedNavigation.espace,
+          )}
+        </div>
+
+        <div className="sidebar-footer sidebar-footer-v3">
           <div className="sidebar-user">
             <div className="sidebar-avatar">
               {initiales(
@@ -484,6 +712,13 @@ export function AppLayout() {
                 {primaryRole}
               </span>
             </div>
+
+            <span
+              className="sidebar-user-chevron"
+              aria-hidden="true"
+            >
+              ›
+            </span>
           </div>
 
           <button
@@ -493,19 +728,11 @@ export function AppLayout() {
             className="sidebar-logout"
             type="button"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <SvgIcon>
               <path d="M10 17l5-5-5-5" />
               <path d="M15 12H3" />
               <path d="M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5" />
-            </svg>
+            </SvgIcon>
 
             <span>
               Déconnexion
@@ -514,52 +741,149 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <section className="workspace workspace-v2">
-        <header className="topbar topbar-v2">
-          <div className="topbar-page">
-            <span>
-              UniPortail Digital
-            </span>
+      <section className="workspace workspace-v3">
+        <header className="topbar topbar-v3">
+          <div className="topbar-left-v3">
+            <button
+              type="button"
+              className="topbar-icon-button menu-button"
+              aria-label="Réduire ou agrandir le menu"
+              onClick={
+                () =>
+                  setSidebarCollapsed(
+                    (value) =>
+                      !value,
+                  )
+              }
+            >
+              <SvgIcon>
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </SvgIcon>
+            </button>
 
-            <strong>
-              {activeItem?.label ??
-                'Plateforme académique'}
-            </strong>
+            <div className="global-search">
+              <SvgIcon>
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-4-4" />
+              </SvgIcon>
+
+              <input
+                type="search"
+                aria-label="Recherche globale"
+                placeholder="Rechercher un étudiant, un enseignant, une formation..."
+              />
+
+              <kbd>
+                ⌘ K
+              </kbd>
+            </div>
           </div>
 
-          <div className="topbar-right">
-            <div className="topbar-status">
-              <span className="topbar-status-dot" />
+          <div className="topbar-right-v3">
+            <button
+              type="button"
+              className="academic-year-control"
+              title="Année académique active"
+            >
+              <span className="academic-year-icon">
+                <SvgIcon>
+                  <rect x="3" y="5" width="18" height="16" rx="2" />
+                  <path d="M16 3v4M8 3v4M3 10h18" />
+                </SvgIcon>
+              </span>
 
-              <div>
+              <span className="academic-year-copy">
                 <small>
-                  Session active
+                  Année académique
                 </small>
 
                 <strong>
-                  Espace sécurisé
+                  2026 – 2027
                 </strong>
-              </div>
-            </div>
+              </span>
 
-            <div className="topbar-user">
-              <div className="topbar-avatar">
+              <span className="academic-year-chevron">
+                ⌄
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className="topbar-action"
+              aria-label="Notifications"
+              title="Notifications"
+              onClick={
+                () =>
+                  navigate(
+                    '/notifications',
+                  )
+              }
+            >
+              <SvgIcon>
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                <path d="M10 21h4" />
+              </SvgIcon>
+
+              {unread > 0 && (
+                <span className="notification-badge">
+                  {unread > 99
+                    ? '99+'
+                    : unread}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="topbar-action"
+              aria-label="Messages"
+              title="Centre de messages"
+              onClick={
+                () =>
+                  navigate(
+                    '/notifications',
+                  )
+              }
+            >
+              <SvgIcon>
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m4 7 8 6 8-6" />
+              </SvgIcon>
+            </button>
+
+            <span className="topbar-divider" />
+
+            <button
+              type="button"
+              className="topbar-profile"
+              onClick={
+                () =>
+                  navigate(
+                    '/me',
+                  )
+              }
+            >
+              <span className="topbar-avatar">
                 {initiales(
                   user?.nomAffichage ??
                   user?.email,
                 )}
-              </div>
+              </span>
 
-              <div className="topbar-user-copy">
+              <span className="topbar-profile-copy">
                 <strong>
                   {displayName}
                 </strong>
 
-                <span>
-                  {user?.email}
-                </span>
-              </div>
-            </div>
+                <small>
+                  {primaryRole}
+                </small>
+              </span>
+
+              <span className="topbar-profile-chevron">
+                ⌄
+              </span>
+            </button>
           </div>
         </header>
 
