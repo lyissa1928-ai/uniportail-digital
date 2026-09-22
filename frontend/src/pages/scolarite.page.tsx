@@ -54,6 +54,7 @@ interface Niveau {
   code: string;
   nom: string;
   formationId: number;
+  terminal?: boolean;
 }
 
 interface Formation {
