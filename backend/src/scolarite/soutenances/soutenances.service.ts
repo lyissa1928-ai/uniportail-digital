@@ -2,7 +2,14 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
+
+import {
+  ConfigService,
+} from '@nestjs/config';
+
+import nodemailer from 'nodemailer';
 
 import {
   PrismaService,
@@ -27,6 +34,9 @@ export class SoutenancesService {
   constructor(
     private readonly prisma:
       PrismaService,
+
+    private readonly config:
+      ConfigService,
   ) {}
 
   private decision(
@@ -849,6 +859,580 @@ export class SoutenancesService {
       parFormation,
       parClasse,
       parMention,
+    };
+  }
+
+  private periodeSemaine() {
+    const maintenant =
+      new Date();
+
+    const debut =
+      new Date(
+        Date.UTC(
+          maintenant.getUTCFullYear(),
+          maintenant.getUTCMonth(),
+          maintenant.getUTCDate(),
+        ),
+      );
+
+    const jour =
+      debut.getUTCDay();
+
+    const decalage =
+      jour === 0
+        ? 6
+        : jour - 1;
+
+    debut.setUTCDate(
+      debut.getUTCDate() -
+      decalage,
+    );
+
+    const finExclusive =
+      new Date(
+        debut.getTime() +
+        7 *
+          24 *
+          60 *
+          60 *
+          1000,
+      );
+
+    const finAffichage =
+      new Date(
+        finExclusive.getTime() -
+        1,
+      );
+
+    return {
+      debut,
+      finExclusive,
+      finAffichage,
+    };
+  }
+
+  async rapportHebdomadaire(
+    anneeAcademique?: string,
+  ) {
+    const periode =
+      this.periodeSemaine();
+
+    const soutenances =
+      await this.prisma
+        .soutenance
+        .findMany({
+          where: {
+            dateSoutenance: {
+              gte:
+                periode.debut,
+
+              lt:
+                periode
+                  .finExclusive,
+            },
+
+            ...(anneeAcademique
+              ? {
+                  inscription: {
+                    anneeAcademique,
+                  },
+                }
+              : {}),
+          },
+
+          orderBy: [
+            {
+              dateSoutenance:
+                'asc',
+            },
+
+            {
+              heureDebut:
+                'asc',
+            },
+          ],
+
+          include: {
+            inscription: {
+              include: {
+                etudiant:
+                  true,
+
+                classe: {
+                  include: {
+                    niveau: {
+                      include: {
+                        formation:
+                          true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+    const planning =
+      soutenances.filter(
+        (item) =>
+          [
+            'PLANIFIEE',
+            'REPORTEE',
+          ].includes(
+            item.statut,
+          ),
+      );
+
+    const terminees =
+      soutenances.filter(
+        (item) =>
+          item.statut ===
+            'TENUE' &&
+          item.validee,
+      );
+
+    const admis =
+      terminees.filter(
+        (item) =>
+          item.decision ===
+          'ADMIS',
+      ).length;
+
+    const ajournes =
+      terminees.filter(
+        (item) =>
+          item.decision ===
+          'AJOURNE',
+      ).length;
+
+    const refuses =
+      terminees.filter(
+        (item) =>
+          item.decision ===
+          'REFUSE',
+      ).length;
+
+    return {
+      anneeAcademique:
+        anneeAcademique ??
+        'TOUTES',
+
+      periode: {
+        debut:
+          periode.debut,
+
+        fin:
+          periode
+            .finAffichage,
+      },
+
+      total:
+        soutenances.length,
+
+      planifiees:
+        planning.length,
+
+      terminees:
+        terminees.length,
+
+      admis,
+      ajournes,
+      refuses,
+
+      tauxAdmission:
+        terminees.length ===
+        0
+          ? 0
+          : Number(
+              (
+                (
+                  admis /
+                  terminees.length
+                ) *
+                100
+              ).toFixed(
+                2,
+              ),
+            ),
+
+      planning,
+
+      resultats:
+        terminees,
+    };
+  }
+
+  async envoyerRapportHebdomadaire(
+    anneeAcademique?: string,
+  ) {
+    const rapport =
+      await this
+        .rapportHebdomadaire(
+          anneeAcademique,
+        );
+
+    const destinataires =
+      await this.prisma
+        .utilisateur
+        .findMany({
+          where: {
+            actif:
+              true,
+
+            roles: {
+              some: {
+                role: {
+                  code: {
+                    in: [
+                      'PEDAGOGIE',
+                      'DIRECTEUR_ETUDES',
+                      'DIRECTEUR',
+                    ],
+                  },
+                },
+              },
+            },
+          },
+
+          select: {
+            id:
+              true,
+
+            email:
+              true,
+
+            nomAffichage:
+              true,
+          },
+        });
+
+    if (
+      destinataires.length ===
+      0
+    ) {
+      return {
+        rapport,
+        destinataires:
+          0,
+        envoyes:
+          0,
+        echecs:
+          0,
+      };
+    }
+
+    const host =
+      this.config.get<string>(
+        'SMTP_HOST',
+      );
+
+    const user =
+      this.config.get<string>(
+        'SMTP_USER',
+      );
+
+    const password =
+      this.config.get<string>(
+        'SMTP_PASSWORD',
+      );
+
+    const from =
+      this.config.get<string>(
+        'SMTP_FROM',
+      );
+
+    if (
+      !host ||
+      !user ||
+      !password ||
+      !from
+    ) {
+      throw new ServiceUnavailableException(
+        'SMTP_NON_CONFIGURE',
+      );
+    }
+
+    const port =
+      Number(
+        this.config.get<string>(
+          'SMTP_PORT',
+        ) ??
+        '465',
+      );
+
+    const secure =
+      String(
+        this.config.get<string>(
+          'SMTP_SECURE',
+        ) ??
+        'true',
+      ).toLowerCase() ===
+      'true';
+
+    const transporter =
+      nodemailer
+        .createTransport({
+          host,
+          port,
+          secure,
+
+          auth: {
+            user,
+            pass:
+              password,
+          },
+
+          connectionTimeout:
+            10000,
+
+          greetingTimeout:
+            10000,
+
+          socketTimeout:
+            20000,
+
+          tls: {
+            minVersion:
+              'TLSv1.2',
+
+            servername:
+              host,
+          },
+        });
+
+    const formatDate =
+      (
+        value:
+          Date | string,
+      ) =>
+        new Date(
+          value,
+        ).toLocaleDateString(
+          'fr-FR',
+          {
+            timeZone:
+              'UTC',
+          },
+        );
+
+    const lignesPlanning =
+      rapport.planning
+        .map(
+          (item) => {
+            const inscription =
+              item.inscription;
+
+            const etudiant =
+              inscription.etudiant;
+
+            const classe =
+              inscription.classe;
+
+            const formation =
+              classe.niveau
+                .formation;
+
+            return (
+              '- ' +
+              formatDate(
+                item.dateSoutenance,
+              ) +
+              (
+                item.heureDebut
+                  ? ' à ' +
+                    item.heureDebut
+                  : ''
+              ) +
+              ' — ' +
+              etudiant.prenom +
+              ' ' +
+              etudiant.nom +
+              ' (' +
+              etudiant.matricule +
+              ')' +
+              ' — ' +
+              formation.nom +
+              ' / ' +
+              classe.nom +
+              (
+                item.lieu
+                  ? ' — ' +
+                    item.lieu
+                  : ''
+              )
+            );
+          },
+        )
+        .join(
+          '\n',
+        );
+
+    const lignesResultats =
+      rapport.resultats
+        .map(
+          (item) => {
+            const etudiant =
+              item.inscription
+                .etudiant;
+
+            return (
+              '- ' +
+              etudiant.prenom +
+              ' ' +
+              etudiant.nom +
+              ' (' +
+              etudiant.matricule +
+              ')' +
+              ' — ' +
+              item.decision +
+              (
+                item.mention
+                  ? ' — ' +
+                    item.mention
+                  : ''
+              )
+            );
+          },
+        )
+        .join(
+          '\n',
+        );
+
+    const texte =
+      'Rapport hebdomadaire des soutenances\n\n' +
+      'Année académique : ' +
+      rapport.anneeAcademique +
+      '\n' +
+      'Période : ' +
+      formatDate(
+        rapport.periode.debut,
+      ) +
+      ' au ' +
+      formatDate(
+        rapport.periode.fin,
+      ) +
+      '\n\n' +
+      'Synthèse\n' +
+      '- Soutenances prévues : ' +
+      rapport.planifiees +
+      '\n' +
+      '- Soutenances terminées : ' +
+      rapport.terminees +
+      '\n' +
+      '- Admis : ' +
+      rapport.admis +
+      '\n' +
+      '- Ajournés : ' +
+      rapport.ajournes +
+      '\n' +
+      '- Refusés : ' +
+      rapport.refuses +
+      '\n' +
+      '- Taux d admission : ' +
+      rapport.tauxAdmission +
+      ' %\n\n' +
+      'Planning de la semaine\n' +
+      (
+        lignesPlanning ||
+        'Aucune soutenance planifiée.'
+      ) +
+      '\n\n' +
+      'Résultats de la semaine\n' +
+      (
+        lignesResultats ||
+        'Aucune soutenance terminée.'
+      ) +
+      '\n\n' +
+      'UniPortail Digital';
+
+    let envoyes =
+      0;
+
+    let echecs =
+      0;
+
+    for (
+      const destinataire
+      of destinataires
+    ) {
+      try {
+        await transporter
+          .sendMail({
+            from,
+            to:
+              destinataire.email,
+
+            subject:
+              'Rapport hebdomadaire des soutenances — ' +
+              rapport.anneeAcademique,
+
+            text:
+              texte,
+          });
+
+        envoyes++;
+      }
+      catch {
+        echecs++;
+      }
+    }
+
+    transporter.close();
+
+    await this.prisma
+      .notification
+      .createMany({
+        data:
+          destinataires.map(
+            (destinataire) => ({
+              utilisateurId:
+                destinataire.id,
+
+              type:
+                echecs ===
+                destinataires.length
+                  ? 'ALERTE'
+                  : 'INFO',
+
+              titre:
+                'Rapport hebdomadaire des soutenances',
+
+              message:
+                'Le rapport de la semaine du ' +
+                formatDate(
+                  rapport.periode
+                    .debut,
+                ) +
+                ' au ' +
+                formatDate(
+                  rapport.periode
+                    .fin,
+                ) +
+                ' est disponible.',
+
+              lien:
+                '/soutenances',
+
+              donnees: {
+                anneeAcademique:
+                  rapport
+                    .anneeAcademique,
+
+                envoyes,
+
+                echecs,
+              },
+            }),
+          ),
+      });
+
+    return {
+      rapport,
+      destinataires:
+        destinataires.length,
+      envoyes,
+      echecs,
     };
   }
 
