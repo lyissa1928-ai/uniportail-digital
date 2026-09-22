@@ -44,6 +44,21 @@ export class SoutenancesService {
     }
   }
 
+  private statut(
+    value?: string,
+  ) {
+    switch (value) {
+      case 'PLANIFIEE':
+      case 'TENUE':
+      case 'REPORTEE':
+      case 'ANNULEE':
+        return value;
+
+      default:
+        return 'PLANIFIEE';
+    }
+  }
+
   async create(
     dto: CreateSoutenanceDto,
   ) {
@@ -98,6 +113,26 @@ export class SoutenancesService {
               dto.dateSoutenance,
             ),
 
+          heureDebut:
+            dto.heureDebut
+              ?.trim() ||
+            null,
+
+          heureFin:
+            dto.heureFin
+              ?.trim() ||
+            null,
+
+          lieu:
+            dto.lieu
+              ?.trim() ||
+            null,
+
+          statut:
+            this.statut(
+              dto.statut,
+            ) as any,
+
           decision:
             this.decision(
               dto.decision,
@@ -105,6 +140,11 @@ export class SoutenancesService {
 
           note:
             dto.note,
+
+          mention:
+            dto.mention
+              ?.trim() ||
+            null,
 
           numeroPv:
             dto.numeroPv
@@ -248,6 +288,31 @@ export class SoutenancesService {
                 )
               : undefined,
 
+          heureDebut:
+            dto.heureDebut === undefined
+              ? undefined
+              : dto.heureDebut.trim() ||
+                null,
+
+          heureFin:
+            dto.heureFin === undefined
+              ? undefined
+              : dto.heureFin.trim() ||
+                null,
+
+          lieu:
+            dto.lieu === undefined
+              ? undefined
+              : dto.lieu.trim() ||
+                null,
+
+          statut:
+            dto.statut
+              ? (this.statut(
+                  dto.statut,
+                ) as any)
+              : undefined,
+
           decision:
             dto.decision
               ? this.decision(
@@ -257,6 +322,12 @@ export class SoutenancesService {
 
           note:
             dto.note,
+
+          mention:
+            dto.mention === undefined
+              ? undefined
+              : dto.mention.trim() ||
+                null,
 
           numeroPv:
             dto.numeroPv === undefined
@@ -295,11 +366,11 @@ export class SoutenancesService {
       );
 
     if (
-      soutenance.decision !==
-      'ADMIS'
+      soutenance.decision ===
+      'EN_ATTENTE'
     ) {
       throw new ConflictException(
-        'Seule une soutenance avec décision ADMIS peut être validée',
+        'Une décision finale est obligatoire avant validation de la soutenance',
       );
     }
 
@@ -321,6 +392,9 @@ export class SoutenancesService {
                 },
 
                 data: {
+                  statut:
+                    'TENUE',
+
                   validee:
                     true,
 
@@ -354,7 +428,8 @@ export class SoutenancesService {
 
                 data: {
                   memoireValide:
-                    true,
+                    soutenance.decision ===
+                    'ADMIS',
                 },
               });
           }
@@ -362,6 +437,278 @@ export class SoutenancesService {
           return updated;
         },
       );
+  }
+
+  async planning(
+    anneeAcademique?: string,
+  ) {
+    return this.prisma
+      .soutenance
+      .findMany({
+        where: {
+          statut: {
+            in: [
+              'PLANIFIEE',
+              'REPORTEE',
+            ],
+          },
+
+          ...(anneeAcademique
+            ? {
+                inscription: {
+                  anneeAcademique,
+                },
+              }
+            : {}),
+        },
+
+        orderBy: [
+          {
+            dateSoutenance:
+              'asc',
+          },
+
+          {
+            heureDebut:
+              'asc',
+          },
+        ],
+
+        include: {
+          inscription: {
+            include: {
+              etudiant:
+                true,
+
+              classe: {
+                include: {
+                  niveau: {
+                    include: {
+                      formation:
+                        true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+  }
+
+  async terminees(
+    anneeAcademique?: string,
+  ) {
+    return this.prisma
+      .soutenance
+      .findMany({
+        where: {
+          statut:
+            'TENUE',
+
+          validee:
+            true,
+
+          ...(anneeAcademique
+            ? {
+                inscription: {
+                  anneeAcademique,
+                },
+              }
+            : {}),
+        },
+
+        orderBy: [
+          {
+            dateSoutenance:
+              'desc',
+          },
+
+          {
+            id:
+              'desc',
+          },
+        ],
+
+        include: {
+          inscription: {
+            include: {
+              etudiant:
+                true,
+
+              validationAcademique:
+                true,
+
+              classe: {
+                include: {
+                  niveau: {
+                    include: {
+                      formation:
+                        true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+  }
+
+  async rapport(
+    anneeAcademique?: string,
+  ) {
+    const soutenances =
+      await this.prisma
+        .soutenance
+        .findMany({
+          where:
+            anneeAcademique
+              ? {
+                  inscription: {
+                    anneeAcademique,
+                  },
+                }
+              : {},
+
+          include: {
+            inscription: {
+              include: {
+                etudiant:
+                  true,
+
+                classe: {
+                  include: {
+                    niveau: {
+                      include: {
+                        formation:
+                          true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+    const parDecision:
+      Record<string, number> = {};
+
+    const parFormation:
+      Record<string, number> = {};
+
+    const parClasse:
+      Record<string, number> = {};
+
+    const parMention:
+      Record<string, number> = {};
+
+    for (
+      const soutenance
+      of soutenances
+    ) {
+      parDecision[
+        soutenance.decision
+      ] =
+        (
+          parDecision[
+            soutenance.decision
+          ] ?? 0
+        ) + 1;
+
+      const formation =
+        soutenance.inscription
+          .classe.niveau
+          .formation.nom;
+
+      const classe =
+        soutenance.inscription
+          .classe.nom;
+
+      parFormation[
+        formation
+      ] =
+        (
+          parFormation[
+            formation
+          ] ?? 0
+        ) + 1;
+
+      parClasse[
+        classe
+      ] =
+        (
+          parClasse[
+            classe
+          ] ?? 0
+        ) + 1;
+
+      if (
+        soutenance.mention
+      ) {
+        parMention[
+          soutenance.mention
+        ] =
+          (
+            parMention[
+              soutenance.mention
+            ] ?? 0
+          ) + 1;
+      }
+    }
+
+    const terminees =
+      soutenances.filter(
+        (item) =>
+          item.statut ===
+            'TENUE' &&
+          item.validee,
+      );
+
+    return {
+      anneeAcademique:
+        anneeAcademique ??
+        'TOUTES',
+
+      total:
+        soutenances.length,
+
+      planifiees:
+        soutenances.filter(
+          (item) =>
+            item.statut ===
+            'PLANIFIEE',
+        ).length,
+
+      reportees:
+        soutenances.filter(
+          (item) =>
+            item.statut ===
+            'REPORTEE',
+        ).length,
+
+      annulees:
+        soutenances.filter(
+          (item) =>
+            item.statut ===
+            'ANNULEE',
+        ).length,
+
+      terminees:
+        terminees.length,
+
+      validees:
+        soutenances.filter(
+          (item) =>
+            item.validee,
+        ).length,
+
+      parDecision,
+      parFormation,
+      parClasse,
+      parMention,
+    };
   }
 
   async invalider(
