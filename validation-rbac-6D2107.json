@@ -1,0 +1,673 @@
+﻿{
+    "date":  "2026-09-21T13:13:55.0375703+00:00",
+    "resume":  {
+                   "echecs":  0,
+                   "ok":  90,
+                   "warnings":  0
+               },
+    "resultats":  [
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "ETUDIANT",
+                          "obtenu":  "ETUDIANT",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Mon profil",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Mes inscriptions",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Mes demandes diplome",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ETUDIANT",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "ENSEIGNANT",
+                          "obtenu":  "ENSEIGNANT",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Mon profil",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Mes affectations",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Mes seances",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "ENSEIGNANT",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "PEDAGOGIE",
+                          "obtenu":  "PEDAGOGIE",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "PEDAGOGIE",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "QHSE",
+                          "obtenu":  "QHSE",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "QHSE",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "SCOLARITE",
+                          "obtenu":  "SCOLARITE",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "SCOLARITE",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Authentification",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Lecture /auth/me",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Role charge dans JWT",
+                          "attendu":  "DIPLOMES",
+                          "obtenu":  "DIPLOMES",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter referentiel",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter enseignants",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Validation pedagogique",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter QHSE",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Acces scolarite",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter eligibilites",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Gestion diplomes",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter reporting",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Administrer utilisateurs",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Consulter audit",
+                          "attendu":  "HTTP 403",
+                          "obtenu":  "HTTP 403",
+                          "statut":  "OK"
+                      },
+                      {
+                          "profil":  "DIPLOMES",
+                          "test":  "Mes notifications",
+                          "attendu":  "HTTP 200",
+                          "obtenu":  "HTTP 200",
+                          "statut":  "OK"
+                      }
+                  ],
+    "session":  "RBAC-6D2107",
+    "comptes":  [
+                    {
+                        "email":  "rbac.etudiant.6d2107@example.com",
+                        "utilisateurId":  2,
+                        "role":  "ETUDIANT"
+                    },
+                    {
+                        "email":  "rbac.enseignant.6d2107@example.com",
+                        "utilisateurId":  3,
+                        "role":  "ENSEIGNANT"
+                    },
+                    {
+                        "email":  "rbac.pedagogie.6d2107@example.com",
+                        "utilisateurId":  4,
+                        "role":  "PEDAGOGIE"
+                    },
+                    {
+                        "email":  "rbac.qhse.6d2107@example.com",
+                        "utilisateurId":  5,
+                        "role":  "QHSE"
+                    },
+                    {
+                        "email":  "rbac.scolarite.6d2107@example.com",
+                        "utilisateurId":  6,
+                        "role":  "SCOLARITE"
+                    },
+                    {
+                        "email":  "rbac.diplomes.6d2107@example.com",
+                        "utilisateurId":  7,
+                        "role":  "DIPLOMES"
+                    }
+                ]
+}

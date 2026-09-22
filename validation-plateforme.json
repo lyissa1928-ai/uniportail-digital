@@ -1,0 +1,221 @@
+﻿{
+    "date":  "2026-09-21T11:12:14.7646922+00:00",
+    "resume":  {
+                   "echecs":  null,
+                   "ok":  32,
+                   "warnings":  2
+               },
+    "utilisateur":  "issa.ly@ucad.edu.sn",
+    "resultats":  [
+                      {
+                          "categorie":  "Structure",
+                          "test":  "Backend present",
+                          "statut":  "OK",
+                          "detail":  "C:\\Users\\lyiss\\Desktop\\projet IA\\suivit evaluations\\backend"
+                      },
+                      {
+                          "categorie":  "Structure",
+                          "test":  "Frontend present",
+                          "statut":  "OK",
+                          "detail":  "C:\\Users\\lyiss\\Desktop\\projet IA\\suivit evaluations\\frontend"
+                      },
+                      {
+                          "categorie":  "Build",
+                          "test":  "Backend NestJS",
+                          "statut":  "OK",
+                          "detail":  "Build reussi"
+                      },
+                      {
+                          "categorie":  "Build",
+                          "test":  "Frontend React",
+                          "statut":  "OK",
+                          "detail":  "Build reussi"
+                      },
+                      {
+                          "categorie":  "Infrastructure",
+                          "test":  "API Health",
+                          "statut":  "OK",
+                          "detail":  "http://localhost:3001/api/health"
+                      },
+                      {
+                          "categorie":  "Infrastructure",
+                          "test":  "Frontend Vite",
+                          "statut":  "WARN",
+                          "detail":  "Frontend non accessible sur 5173"
+                      },
+                      {
+                          "categorie":  "Securite",
+                          "test":  "/auth/me protege",
+                          "statut":  "OK",
+                          "detail":  "HTTP 401"
+                      },
+                      {
+                          "categorie":  "Authentification",
+                          "test":  "Connexion SUPER_ADMIN",
+                          "statut":  "OK",
+                          "detail":  "issa.ly@ucad.edu.sn"
+                      },
+                      {
+                          "categorie":  "Authentification",
+                          "test":  "Token JWT retourne",
+                          "statut":  "OK",
+                          "detail":  "JWT recu"
+                      },
+                      {
+                          "categorie":  "RBAC",
+                          "test":  "/auth/me",
+                          "statut":  "OK",
+                          "detail":  "Utilisateur authentifie"
+                      },
+                      {
+                          "categorie":  "RBAC",
+                          "test":  "Role SUPER_ADMIN",
+                          "statut":  "OK",
+                          "detail":  "Role detecte"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Filieres",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Formations",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Niveaux",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Classes",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Cours",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Enseignants",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Affectations",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Seances",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Pedagogie",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Etudiants",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Inscriptions",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Eligibles",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Non eligibles",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Demandes diplomes",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "QHSE Dashboard",
+                          "statut":  "FAIL",
+                          "detail":  "HTTP 404"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "QHSE Alertes",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Reporting",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Audit statistiques",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Notifications",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Compteur notifications",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Utilisateurs",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Roles",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "API",
+                          "test":  "Permissions",
+                          "statut":  "OK",
+                          "detail":  "HTTP 200"
+                      },
+                      {
+                          "categorie":  "Frontend",
+                          "test":  "Vite",
+                          "statut":  "WARN",
+                          "detail":  "Port 5173 non actif"
+                      }
+                  ]
+}

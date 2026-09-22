@@ -1,0 +1,1975 @@
+﻿import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react';
+
+import {
+  api,
+  ApiException,
+} from '../lib/api';
+
+import {
+  useAuth,
+} from '../auth/auth-context';
+
+type Tab =
+  | 'enseignants'
+  | 'affectations'
+  | 'seances';
+
+interface Enseignant {
+  id: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  email?: string | null;
+  telephone?: string | null;
+  specialite?: string | null;
+  statut?: string | null;
+  actif: boolean;
+}
+
+interface Classe {
+  id: number;
+  code: string;
+  nom: string;
+  annee: string;
+  niveauId: number;
+}
+
+interface Cours {
+  id: number;
+  code: string;
+  intitule: string;
+  volumeHoraire: number;
+  niveauId: number;
+}
+
+interface Affectation {
+  id: number;
+  anneeAcademique: string;
+  actif: boolean;
+
+  enseignantId: number;
+  coursId: number;
+  classeId: number;
+
+  enseignant?: Enseignant;
+  cours?: Cours;
+  classe?: Classe;
+}
+
+interface Seance {
+  id: number;
+  dateSeance: string;
+  heureDebut: string;
+  heureFin: string;
+  dureeMinutes: number;
+  contenu: string;
+  observations?: string | null;
+  motifRejet?: string | null;
+  statut: string;
+
+  affectationId: number;
+
+  affectation?: Affectation;
+}
+
+const emptyEnseignant = {
+  matricule: '',
+  nom: '',
+  prenom: '',
+  email: '',
+  telephone: '',
+  specialite: '',
+  statut: 'VACATAIRE',
+  actif: true,
+};
+
+const emptyAffectation = {
+  enseignantId: '',
+  coursId: '',
+  classeId: '',
+  anneeAcademique: '2026-2027',
+  actif: true,
+};
+
+export function EnseignementsPage() {
+  const {
+    user,
+  } = useAuth();
+
+  const [
+    tab,
+    setTab,
+  ] =
+    useState<Tab>('enseignants');
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+  const [
+    search,
+    setSearch,
+  ] =
+    useState('');
+
+  const [
+    error,
+    setError,
+  ] =
+    useState('');
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState('');
+
+  const [
+    editingId,
+    setEditingId,
+  ] =
+    useState<number | null>(
+      null,
+    );
+
+  const [
+    enseignants,
+    setEnseignants,
+  ] =
+    useState<Enseignant[]>([]);
+
+  const [
+    classes,
+    setClasses,
+  ] =
+    useState<Classe[]>([]);
+
+  const [
+    cours,
+    setCours,
+  ] =
+    useState<Cours[]>([]);
+
+  const [
+    affectations,
+    setAffectations,
+  ] =
+    useState<Affectation[]>([]);
+
+  const [
+    seances,
+    setSeances,
+  ] =
+    useState<Seance[]>([]);
+
+  const [
+    attente,
+    setAttente,
+  ] =
+    useState<Seance[]>([]);
+
+  const [
+    enseignantForm,
+    setEnseignantForm,
+  ] =
+    useState(
+      emptyEnseignant,
+    );
+
+  const [
+    affectationForm,
+    setAffectationForm,
+  ] =
+    useState(
+      emptyAffectation,
+    );
+
+  const canManage =
+    user?.permissions.includes(
+      'ENSEIGNEMENTS_GERER',
+    ) ?? false;
+
+  const canValidate =
+    user?.permissions.includes(
+      'SEANCES_VALIDER',
+    ) ?? false;
+
+  const load =
+    useCallback(
+      async () => {
+        setLoading(true);
+        setError('');
+
+        try {
+          const baseRequests = [
+            api<Enseignant[]>(
+              '/enseignants',
+            ),
+
+            api<Affectation[]>(
+              '/affectations',
+            ),
+
+            api<Classe[]>(
+              '/classes',
+            ),
+
+            api<Cours[]>(
+              '/cours',
+            ),
+
+            api<Seance[]>(
+              '/seances',
+            ),
+          ] as const;
+
+          const [
+            enseignantsData,
+            affectationsData,
+            classesData,
+            coursData,
+            seancesData,
+          ] =
+            await Promise.all(
+              baseRequests,
+            );
+
+          setEnseignants(
+            enseignantsData,
+          );
+
+          setAffectations(
+            affectationsData,
+          );
+
+          setClasses(
+            classesData,
+          );
+
+          setCours(
+            coursData,
+          );
+
+          setSeances(
+            seancesData,
+          );
+
+          if (canValidate) {
+            try {
+              const enAttente =
+                await api<Seance[]>(
+                  '/pedagogie/seances/en-attente',
+                );
+
+              setAttente(
+                enAttente,
+              );
+            }
+            catch {
+              setAttente([]);
+            }
+          }
+          else {
+            setAttente([]);
+          }
+        }
+        catch (err) {
+          setError(
+            err instanceof ApiException
+              ? err.message
+              : 'Chargement impossible.',
+          );
+        }
+        finally {
+          setLoading(false);
+        }
+      },
+      [
+        canValidate,
+      ],
+    );
+
+  useEffect(
+    () => {
+      void load();
+    },
+    [
+      load,
+    ],
+  );
+
+  function success(
+    text: string,
+  ) {
+    setMessage(text);
+    setError('');
+
+    window.setTimeout(
+      () => {
+        setMessage('');
+      },
+      2500,
+    );
+  }
+
+  function fail(
+    err: unknown,
+  ) {
+    setError(
+      err instanceof ApiException
+        ? err.message
+        : 'Une erreur est survenue.',
+    );
+  }
+
+  function resetForms() {
+    setEditingId(null);
+
+    setEnseignantForm(
+      emptyEnseignant,
+    );
+
+    setAffectationForm(
+      emptyAffectation,
+    );
+  }
+
+  async function saveEnseignant(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    try {
+      await api(
+        editingId
+          ? `/enseignants/${editingId}`
+          : '/enseignants',
+        {
+          method:
+            editingId
+              ? 'PATCH'
+              : 'POST',
+
+          body:
+            JSON.stringify({
+              ...enseignantForm,
+
+              email:
+                enseignantForm.email ||
+                undefined,
+
+              telephone:
+                enseignantForm.telephone ||
+                undefined,
+
+              specialite:
+                enseignantForm.specialite ||
+                undefined,
+
+              statut:
+                enseignantForm.statut ||
+                undefined,
+            }),
+        },
+      );
+
+      success(
+        editingId
+          ? 'Enseignant modifié.'
+          : 'Enseignant créé.',
+      );
+
+      resetForms();
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function deleteEnseignant(
+    id: number,
+  ) {
+    if (
+      !window.confirm(
+        'Supprimer cet enseignant ?',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api(
+        `/enseignants/${id}`,
+        {
+          method: 'DELETE',
+        },
+      );
+
+      success(
+        'Enseignant supprimé.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function saveAffectation(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    try {
+      await api(
+        '/affectations',
+        {
+          method: 'POST',
+
+          body:
+            JSON.stringify({
+              enseignantId:
+                Number(
+                  affectationForm
+                    .enseignantId,
+                ),
+
+              coursId:
+                Number(
+                  affectationForm
+                    .coursId,
+                ),
+
+              classeId:
+                Number(
+                  affectationForm
+                    .classeId,
+                ),
+
+              anneeAcademique:
+                affectationForm
+                  .anneeAcademique,
+
+              actif:
+                affectationForm
+                  .actif,
+            }),
+        },
+      );
+
+      success(
+        'Affectation créée.',
+      );
+
+      setAffectationForm(
+        emptyAffectation,
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function deleteAffectation(
+    id: number,
+  ) {
+    if (
+      !window.confirm(
+        'Supprimer cette affectation ?',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api(
+        `/affectations/${id}`,
+        {
+          method: 'DELETE',
+        },
+      );
+
+      success(
+        'Affectation supprimée.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function validerSeance(
+    id: number,
+  ) {
+    try {
+      await api(
+        `/pedagogie/seances/${id}/valider`,
+        {
+          method: 'PATCH',
+        },
+      );
+
+      success(
+        'Séance validée.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function rejeterSeance(
+    id: number,
+  ) {
+    const motif =
+      window.prompt(
+        'Motif du rejet :',
+      );
+
+    if (!motif?.trim()) {
+      return;
+    }
+
+    try {
+      await api(
+        `/pedagogie/seances/${id}/rejeter`,
+        {
+          method: 'PATCH',
+
+          body:
+            JSON.stringify({
+              motif:
+                motif.trim(),
+            }),
+        },
+      );
+
+      success(
+        'Séance rejetée.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  const query =
+    search
+      .trim()
+      .toLowerCase();
+
+  const filteredEnseignants =
+    useMemo(
+      () =>
+        enseignants.filter(
+          (item) =>
+            [
+              item.matricule,
+              item.nom,
+              item.prenom,
+              item.email,
+              item.specialite,
+              item.statut,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(query),
+        ),
+      [
+        enseignants,
+        query,
+      ],
+    );
+
+  const filteredAffectations =
+    useMemo(
+      () =>
+        affectations.filter(
+          (item) => {
+            const enseignant =
+              item.enseignant ??
+              enseignants.find(
+                (x) =>
+                  x.id ===
+                  item.enseignantId,
+              );
+
+            const coursItem =
+              item.cours ??
+              cours.find(
+                (x) =>
+                  x.id ===
+                  item.coursId,
+              );
+
+            const classe =
+              item.classe ??
+              classes.find(
+                (x) =>
+                  x.id ===
+                  item.classeId,
+              );
+
+            return [
+              enseignant?.matricule,
+              enseignant?.nom,
+              enseignant?.prenom,
+              coursItem?.code,
+              coursItem?.intitule,
+              classe?.code,
+              classe?.nom,
+              item.anneeAcademique,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(query);
+          },
+        ),
+      [
+        affectations,
+        enseignants,
+        cours,
+        classes,
+        query,
+      ],
+    );
+
+  const filteredSeances =
+    useMemo(
+      () =>
+        seances.filter(
+          (item) =>
+            [
+              item.dateSeance,
+              item.heureDebut,
+              item.heureFin,
+              item.contenu,
+              item.statut,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(query),
+        ),
+      [
+        seances,
+        query,
+      ],
+    );
+
+  function enseignantName(
+    affectation:
+      Affectation,
+  ) {
+    const item =
+      affectation.enseignant ??
+      enseignants.find(
+        (x) =>
+          x.id ===
+          affectation.enseignantId,
+      );
+
+    if (!item) {
+      return `Enseignant #${affectation.enseignantId}`;
+    }
+
+    return `${item.prenom} ${item.nom}`;
+  }
+
+  function coursName(
+    affectation:
+      Affectation,
+  ) {
+    const item =
+      affectation.cours ??
+      cours.find(
+        (x) =>
+          x.id ===
+          affectation.coursId,
+      );
+
+    if (!item) {
+      return `Cours #${affectation.coursId}`;
+    }
+
+    return `${item.code} — ${item.intitule}`;
+  }
+
+  function classeName(
+    affectation:
+      Affectation,
+  ) {
+    const item =
+      affectation.classe ??
+      classes.find(
+        (x) =>
+          x.id ===
+          affectation.classeId,
+      );
+
+    if (!item) {
+      return `Classe #${affectation.classeId}`;
+    }
+
+    return `${item.code} — ${item.nom}`;
+  }
+
+  function getAffectation(
+    id: number,
+  ) {
+    return affectations.find(
+      (item) =>
+        item.id === id,
+    );
+  }
+
+  if (loading) {
+    return (
+      <section className="panel">
+        Chargement du suivi des enseignements...
+      </section>
+    );
+  }
+
+  return (
+    <div className="page-stack enseignements-premium">
+
+      <section className="page-header">
+        <div>
+          <span className="eyebrow">
+            Suivi académique
+          </span>
+
+          <h1>
+            Enseignements
+          </h1>
+
+          <p>
+            Enseignants, affectations,
+            séances et validation
+            pédagogique.
+          </p>
+        </div>
+      </section>
+
+      {message && (
+        <div className="alert success">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="alert error">
+          {error}
+        </div>
+      )}
+
+      <section className="stat-grid">
+
+        <article className="stat-card">
+          <span>
+            Enseignants actifs
+          </span>
+
+          <strong>
+            {
+              enseignants.filter(
+                (item) =>
+                  item.actif,
+              ).length
+            }
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            Affectations
+          </span>
+
+          <strong>
+            {affectations.length}
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            Séances
+          </span>
+
+          <strong>
+            {seances.length}
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            À valider
+          </span>
+
+          <strong>
+            {
+              canValidate
+                ? attente.length
+                : seances.filter(
+                    (item) =>
+                      item.statut ===
+                      'DECLAREE',
+                  ).length
+            }
+          </strong>
+        </article>
+
+      </section>
+
+      <section className="panel">
+        <div className="toolbar">
+
+          <div className="tabs">
+
+            <button
+              type="button"
+              className={
+                tab ===
+                'enseignants'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() => {
+                setTab(
+                  'enseignants',
+                );
+
+                resetForms();
+              }}
+            >
+              Enseignants
+            </button>
+
+            <button
+              type="button"
+              className={
+                tab ===
+                'affectations'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() => {
+                setTab(
+                  'affectations',
+                );
+
+                resetForms();
+              }}
+            >
+              Affectations
+            </button>
+
+            <button
+              type="button"
+              className={
+                tab ===
+                'seances'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() => {
+                setTab(
+                  'seances',
+                );
+
+                resetForms();
+              }}
+            >
+              Séances
+            </button>
+
+          </div>
+
+          <input
+            className="search-input"
+            value={search}
+            onChange={
+              (event) =>
+                setSearch(
+                  event.target
+                    .value,
+                )
+            }
+            placeholder="Rechercher..."
+          />
+
+        </div>
+      </section>
+
+      {
+        tab ===
+          'enseignants' && (
+          <section
+            className={
+              canManage
+                ? 'crud-layout'
+                : ''
+            }
+          >
+
+            <article className="panel table-panel">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>
+                      Matricule
+                    </th>
+                    <th>
+                      Enseignant
+                    </th>
+                    <th>
+                      Spécialité
+                    </th>
+                    <th>
+                      Statut
+                    </th>
+                    <th>
+                      État
+                    </th>
+
+                    {canManage && (
+                      <th>
+                        Actions
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {
+                    filteredEnseignants
+                      .map(
+                        (item) => (
+                          <tr
+                            key={
+                              item.id
+                            }
+                          >
+                            <td>
+                              <strong>
+                                {
+                                  item.matricule
+                                }
+                              </strong>
+                            </td>
+
+                            <td>
+                              <strong>
+                                {
+                                  item.prenom
+                                }{' '}
+                                {
+                                  item.nom
+                                }
+                              </strong>
+
+                              <small className="table-subtitle">
+                                {
+                                  item.email ??
+                                  '-'
+                                }
+                              </small>
+                            </td>
+
+                            <td>
+                              {
+                                item.specialite ??
+                                '-'
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                item.statut ??
+                                '-'
+                              }
+                            </td>
+
+                            <td>
+                              <span
+                                className={
+                                  item.actif
+                                    ? 'status active'
+                                    : 'status inactive'
+                                }
+                              >
+                                {
+                                  item.actif
+                                    ? 'Actif'
+                                    : 'Inactif'
+                                }
+                              </span>
+                            </td>
+
+                            {canManage && (
+                              <td>
+                                <div className="action-buttons">
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingId(
+                                        item.id,
+                                      );
+
+                                      setEnseignantForm({
+                                        matricule:
+                                          item.matricule,
+
+                                        nom:
+                                          item.nom,
+
+                                        prenom:
+                                          item.prenom,
+
+                                        email:
+                                          item.email ??
+                                          '',
+
+                                        telephone:
+                                          item.telephone ??
+                                          '',
+
+                                        specialite:
+                                          item.specialite ??
+                                          '',
+
+                                        statut:
+                                          item.statut ??
+                                          'VACATAIRE',
+
+                                        actif:
+                                          item.actif,
+                                      });
+                                    }}
+                                  >
+                                    Modifier
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="danger-link"
+                                    onClick={() =>
+                                      void deleteEnseignant(
+                                        item.id,
+                                      )
+                                    }
+                                  >
+                                    Supprimer
+                                  </button>
+
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                  }
+                </tbody>
+              </table>
+
+            </article>
+
+            {canManage && (
+              <article className="panel">
+
+                <div className="form-heading">
+                  <h2>
+                    {
+                      editingId
+                        ? 'Modifier enseignant'
+                        : 'Nouvel enseignant'
+                    }
+                  </h2>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={
+                        resetForms
+                      }
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
+
+                <form
+                  className="form-grid"
+                  onSubmit={
+                    saveEnseignant
+                  }
+                >
+
+                  <label>
+                    Matricule
+                    <input
+                      value={
+                        enseignantForm
+                          .matricule
+                      }
+                      required
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            matricule:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Nom
+                    <input
+                      value={
+                        enseignantForm.nom
+                      }
+                      required
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            nom:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Prénom
+                    <input
+                      value={
+                        enseignantForm.prenom
+                      }
+                      required
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            prenom:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    E-mail
+                    <input
+                      type="email"
+                      value={
+                        enseignantForm.email
+                      }
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            email:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Téléphone
+                    <input
+                      value={
+                        enseignantForm
+                          .telephone
+                      }
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            telephone:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Spécialité
+                    <input
+                      value={
+                        enseignantForm
+                          .specialite
+                      }
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            specialite:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Statut
+
+                    <select
+                      value={
+                        enseignantForm.statut
+                      }
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            statut:
+                              event.target
+                                .value,
+                          })
+                      }
+                    >
+                      <option value="VACATAIRE">
+                        Vacataire
+                      </option>
+
+                      <option value="PERMANENT">
+                        Permanent
+                      </option>
+
+                      <option value="CONSULTANT">
+                        Consultant
+                      </option>
+                    </select>
+                  </label>
+
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={
+                        enseignantForm.actif
+                      }
+                      onChange={
+                        (event) =>
+                          setEnseignantForm({
+                            ...enseignantForm,
+
+                            actif:
+                              event.target
+                                .checked,
+                          })
+                      }
+                    />
+
+                    Compte enseignant actif
+                  </label>
+
+                  <button
+                    className="primary-button"
+                    type="submit"
+                  >
+                    {
+                      editingId
+                        ? 'Enregistrer'
+                        : 'Ajouter'
+                    }
+                  </button>
+
+                </form>
+
+              </article>
+            )}
+
+          </section>
+        )
+      }
+
+      {
+        tab ===
+          'affectations' && (
+          <section
+            className={
+              canManage
+                ? 'crud-layout'
+                : ''
+            }
+          >
+
+            <article className="panel table-panel">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>
+                      Enseignant
+                    </th>
+                    <th>
+                      Cours
+                    </th>
+                    <th>
+                      Classe
+                    </th>
+                    <th>
+                      Année
+                    </th>
+                    <th>
+                      État
+                    </th>
+
+                    {canManage && (
+                      <th>
+                        Action
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {
+                    filteredAffectations
+                      .map(
+                        (item) => (
+                          <tr
+                            key={
+                              item.id
+                            }
+                          >
+                            <td>
+                              {
+                                enseignantName(
+                                  item,
+                                )
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                coursName(
+                                  item,
+                                )
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                classeName(
+                                  item,
+                                )
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                item.anneeAcademique
+                              }
+                            </td>
+
+                            <td>
+                              <span
+                                className={
+                                  item.actif
+                                    ? 'status active'
+                                    : 'status inactive'
+                                }
+                              >
+                                {
+                                  item.actif
+                                    ? 'Active'
+                                    : 'Inactive'
+                                }
+                              </span>
+                            </td>
+
+                            {canManage && (
+                              <td>
+                                <button
+                                  type="button"
+                                  className="danger-text-button"
+                                  onClick={() =>
+                                    void deleteAffectation(
+                                      item.id,
+                                    )
+                                  }
+                                >
+                                  Supprimer
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ),
+                      )
+                  }
+                </tbody>
+              </table>
+
+            </article>
+
+            {canManage && (
+              <article className="panel">
+
+                <h2>
+                  Nouvelle affectation
+                </h2>
+
+                <form
+                  className="form-grid"
+                  onSubmit={
+                    saveAffectation
+                  }
+                >
+
+                  <label>
+                    Enseignant
+
+                    <select
+                      required
+                      value={
+                        affectationForm
+                          .enseignantId
+                      }
+                      onChange={
+                        (event) =>
+                          setAffectationForm({
+                            ...affectationForm,
+
+                            enseignantId:
+                              event.target
+                                .value,
+                          })
+                      }
+                    >
+                      <option value="">
+                        Sélectionner
+                      </option>
+
+                      {
+                        enseignants
+                          .filter(
+                            (item) =>
+                              item.actif,
+                          )
+                          .map(
+                            (item) => (
+                              <option
+                                key={
+                                  item.id
+                                }
+                                value={
+                                  item.id
+                                }
+                              >
+                                {
+                                  item.matricule
+                                } — {
+                                  item.prenom
+                                } {
+                                  item.nom
+                                }
+                              </option>
+                            ),
+                          )
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Cours
+
+                    <select
+                      required
+                      value={
+                        affectationForm
+                          .coursId
+                      }
+                      onChange={
+                        (event) =>
+                          setAffectationForm({
+                            ...affectationForm,
+
+                            coursId:
+                              event.target
+                                .value,
+                          })
+                      }
+                    >
+                      <option value="">
+                        Sélectionner
+                      </option>
+
+                      {
+                        cours.map(
+                          (item) => (
+                            <option
+                              key={
+                                item.id
+                              }
+                              value={
+                                item.id
+                              }
+                            >
+                              {
+                                item.code
+                              } — {
+                                item.intitule
+                              }
+                            </option>
+                          ),
+                        )
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Classe
+
+                    <select
+                      required
+                      value={
+                        affectationForm
+                          .classeId
+                      }
+                      onChange={
+                        (event) =>
+                          setAffectationForm({
+                            ...affectationForm,
+
+                            classeId:
+                              event.target
+                                .value,
+                          })
+                      }
+                    >
+                      <option value="">
+                        Sélectionner
+                      </option>
+
+                      {
+                        classes.map(
+                          (item) => (
+                            <option
+                              key={
+                                item.id
+                              }
+                              value={
+                                item.id
+                              }
+                            >
+                              {
+                                item.code
+                              } — {
+                                item.nom
+                              } ({
+                                item.annee
+                              })
+                            </option>
+                          ),
+                        )
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Année académique
+
+                    <input
+                      required
+                      placeholder="2026-2027"
+                      value={
+                        affectationForm
+                          .anneeAcademique
+                      }
+                      onChange={
+                        (event) =>
+                          setAffectationForm({
+                            ...affectationForm,
+
+                            anneeAcademique:
+                              event.target
+                                .value,
+                          })
+                      }
+                    />
+                  </label>
+
+                  <button
+                    className="primary-button"
+                    type="submit"
+                  >
+                    Affecter
+                  </button>
+
+                </form>
+              </article>
+            )}
+
+          </section>
+        )
+      }
+
+      {
+        tab ===
+          'seances' && (
+          <div className="page-stack">
+
+            {canValidate &&
+              attente.length > 0 && (
+              <section className="panel">
+
+                <div className="section-title-row">
+                  <div>
+                    <h2>
+                      Séances à valider
+                    </h2>
+
+                    <p className="muted">
+                      Déclarations en attente
+                      de décision pédagogique.
+                    </p>
+                  </div>
+
+                  <span className="counter-badge">
+                    {attente.length}
+                  </span>
+                </div>
+
+                <div className="pending-grid">
+
+                  {
+                    attente.map(
+                      (item) => {
+                        const affectation =
+                          item.affectation ??
+                          getAffectation(
+                            item.affectationId,
+                          );
+
+                        return (
+                          <article
+                            className="session-card"
+                            key={
+                              item.id
+                            }
+                          >
+                            <div className="session-card-header">
+                              <strong>
+                                {
+                                  affectation
+                                    ? coursName(
+                                        affectation,
+                                      )
+                                    : `Affectation #${item.affectationId}`
+                                }
+                              </strong>
+
+                              <span className="status pending">
+                                À valider
+                              </span>
+                            </div>
+
+                            <p>
+                              {
+                                affectation
+                                  ? enseignantName(
+                                      affectation,
+                                    )
+                                  : '-'
+                              }
+                            </p>
+
+                            <dl className="session-details">
+                              <div>
+                                <dt>
+                                  Date
+                                </dt>
+                                <dd>
+                                  {
+                                    formatDate(
+                                      item.dateSeance,
+                                    )
+                                  }
+                                </dd>
+                              </div>
+
+                              <div>
+                                <dt>
+                                  Horaire
+                                </dt>
+                                <dd>
+                                  {
+                                    item.heureDebut
+                                  } – {
+                                    item.heureFin
+                                  }
+                                </dd>
+                              </div>
+
+                              <div>
+                                <dt>
+                                  Durée
+                                </dt>
+                                <dd>
+                                  {
+                                    formatDuration(
+                                      item.dureeMinutes,
+                                    )
+                                  }
+                                </dd>
+                              </div>
+                            </dl>
+
+                            <p className="session-content">
+                              {
+                                item.contenu
+                              }
+                            </p>
+
+                            <div className="session-actions">
+
+                              <button
+                                type="button"
+                                className="approve-button"
+                                onClick={() =>
+                                  void validerSeance(
+                                    item.id,
+                                  )
+                                }
+                              >
+                                Valider
+                              </button>
+
+                              <button
+                                type="button"
+                                className="reject-button"
+                                onClick={() =>
+                                  void rejeterSeance(
+                                    item.id,
+                                  )
+                                }
+                              >
+                                Rejeter
+                              </button>
+
+                            </div>
+                          </article>
+                        );
+                      },
+                    )
+                  }
+
+                </div>
+
+              </section>
+            )}
+
+            <section className="panel table-panel">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>
+                      Date
+                    </th>
+                    <th>
+                      Cours
+                    </th>
+                    <th>
+                      Enseignant
+                    </th>
+                    <th>
+                      Horaire
+                    </th>
+                    <th>
+                      Durée
+                    </th>
+                    <th>
+                      Statut
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {
+                    filteredSeances
+                      .map(
+                        (item) => {
+                          const affectation =
+                            item.affectation ??
+                            getAffectation(
+                              item.affectationId,
+                            );
+
+                          return (
+                            <tr
+                              key={
+                                item.id
+                              }
+                            >
+                              <td>
+                                {
+                                  formatDate(
+                                    item.dateSeance,
+                                  )
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  affectation
+                                    ? coursName(
+                                        affectation,
+                                      )
+                                    : '-'
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  affectation
+                                    ? enseignantName(
+                                        affectation,
+                                      )
+                                    : '-'
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  item.heureDebut
+                                } – {
+                                  item.heureFin
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  formatDuration(
+                                    item.dureeMinutes,
+                                  )
+                                }
+                              </td>
+
+                              <td>
+                                <SessionStatus
+                                  status={
+                                    item.statut
+                                  }
+                                />
+                              </td>
+                            </tr>
+                          );
+                        },
+                      )
+                  }
+                </tbody>
+              </table>
+
+            </section>
+
+          </div>
+        )
+      }
+
+    </div>
+  );
+}
+
+function SessionStatus({
+  status,
+}: {
+  status: string;
+}) {
+  const normalized =
+    status.toLowerCase();
+
+  return (
+    <span
+      className={
+        `status session-status ${normalized}`
+      }
+    >
+      {status}
+    </span>
+  );
+}
+
+function formatDuration(
+  minutes: number,
+) {
+  const h =
+    Math.floor(
+      minutes / 60,
+    );
+
+  const m =
+    minutes % 60;
+
+  if (h && m) {
+    return `${h}h ${m}min`;
+  }
+
+  if (h) {
+    return `${h}h`;
+  }
+
+  return `${m}min`;
+}
+
+function formatDate(
+  value: string,
+) {
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return value;
+  }
+
+  return date.toLocaleDateString(
+    'fr-FR',
+  );
+}

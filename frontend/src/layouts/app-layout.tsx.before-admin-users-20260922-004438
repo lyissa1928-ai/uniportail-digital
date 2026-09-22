@@ -1,0 +1,250 @@
+import { PasswordChangeGate } from '../components/password-change-gate';
+﻿import {
+  NavLink,
+  Outlet,
+  useNavigate,
+} from 'react-router';
+
+import {
+  useAuth,
+} from '../auth/auth-context';
+
+interface NavigationItem {
+  label: string;
+  path: string;
+  permission?: string;
+  anyPermission?: string[];
+}
+
+const navigation:
+  NavigationItem[] = [
+    {
+      label:
+        'Tableau de bord',
+      path:
+        '/dashboard',
+    },
+
+    {
+      label:
+        'Référentiel',
+      path:
+        '/referentiel',
+      permission:
+        'REFERENTIEL_CONSULTER',
+    },
+
+    {
+      label:
+        'Enseignements',
+      path:
+        '/enseignements',
+      permission:
+        'ENSEIGNEMENTS_CONSULTER',
+    },
+
+    {
+      label:
+        'Pédagogie',
+      path:
+        '/pedagogie',
+      permission:
+        'SEANCES_VALIDER',
+    },
+
+    {
+      label:
+        'QHSE',
+      path:
+        '/qhse',
+      permission:
+        'QHSE_CONSULTER',
+    },
+
+    {
+      label:
+        'Scolarité',
+      path:
+        '/scolarite',
+      permission:
+        'SCOLARITE_GERER',
+    },
+
+    {
+      label:
+        'Diplômes',
+      path:
+        '/diplomes',
+      anyPermission: [
+        'DIPLOMES_GERER',
+        'DIPLOME_DEMANDER',
+      ],
+    },
+
+    {
+      label:
+        'Audit',
+      path:
+        '/audit',
+      permission:
+        'AUDIT_CONSULTER',
+    },
+
+    {
+      label:
+        'Utilisateurs',
+      path:
+        '/utilisateurs',
+      permission:
+        'UTILISATEURS_GERER',
+    },
+
+    {
+      label:
+        'Mon espace',
+      path:
+        '/me',
+    },
+  ];
+
+export function AppLayout() {
+  const {
+    user,
+    logout,
+  } = useAuth();
+
+  const navigate =
+    useNavigate();
+
+  function allowed(
+    item:
+      NavigationItem,
+  ) {
+    if (!user) {
+      return false;
+    }
+
+    if (
+      item.permission &&
+      !user.permissions.includes(
+        item.permission,
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      item.anyPermission &&
+      !item.anyPermission.some(
+        (permission) =>
+          user.permissions.includes(
+            permission,
+          ),
+      )
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function deconnexion() {
+    logout();
+    navigate(
+      '/login',
+      {
+        replace: true,
+      },
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">
+            SE
+          </div>
+
+          <div>
+            <strong>
+              Suivi Évaluation
+            </strong>
+
+            <span>
+              Administration
+            </span>
+          </div>
+        </div>
+
+        <nav className="navigation">
+          {navigation
+            .filter(allowed)
+            .map(
+              (item) => (
+                <NavLink
+                  key={
+                    item.path
+                  }
+                  to={
+                    item.path
+                  }
+                  className={({
+                    isActive,
+                  }) =>
+                    isActive
+                      ? 'nav-link active'
+                      : 'nav-link'
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ),
+            )}
+        </nav>
+
+        <div className="sidebar-footer">
+          <span>
+            {user?.nomAffichage ??
+              user?.email}
+          </span>
+
+          <small>
+            {user?.roles.join(
+              ' · ',
+            )}
+          </small>
+
+          <button
+            onClick={
+              deconnexion
+            }
+            className="secondary-button"
+          >
+            Déconnexion
+          </button>
+        </div>
+      </aside>
+
+      <section className="workspace">
+        <header className="topbar">
+          <div>
+            <strong>
+              Plateforme académique
+            </strong>
+          </div>
+
+          <div className="user-chip">
+            {user?.email}
+          </div>
+        </header>
+
+        <main className="content">
+          <PasswordChangeGate>
+            <Outlet />
+          </PasswordChangeGate>
+        </main>
+      </section>
+    </div>
+  );
+}

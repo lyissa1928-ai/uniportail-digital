@@ -1,0 +1,226 @@
+import {
+  Navigate,
+  createBrowserRouter,
+} from 'react-router';
+
+import {
+  ProtectedRoute,
+} from './auth/protected-route';
+
+import {
+  RequireAccess,
+} from './auth/require-access';
+
+import {
+  AppLayout,
+} from './layouts/app-layout';
+
+import {
+  LoginPage,
+} from './pages/login.page';
+
+import {
+  DashboardPage,
+} from './pages/dashboard.page';
+
+import {
+  ReferentielPage,
+} from './pages/referentiel.page';
+
+import {
+  EnseignementsPage,
+} from './pages/enseignements.page';
+
+import {
+  PedagogiePage,
+} from './pages/pedagogie.page';
+
+import {
+  QhsePage,
+} from './pages/qhse.page';
+
+import {
+  ScolaritePage,
+} from './pages/scolarite.page';
+
+import {
+  DiplomesPage,
+} from './pages/diplomes.page';
+
+import {
+  UtilisateursPage,
+} from './pages/utilisateurs.page';
+
+import {
+  AuditPage,
+} from './pages/audit.page';
+
+import {
+  NotificationsPage,
+} from './pages/notifications.page';
+
+import {
+  MonEspacePage,
+} from './pages/mon-espace.page';
+
+import {
+  ForbiddenPage,
+  NotFoundPage,
+} from './pages/errors.page';
+
+export const router =
+  createBrowserRouter([
+    {
+      path: '/login',
+      element: <LoginPage />,
+    },
+
+    {
+      path: '/403',
+      element: <ForbiddenPage />,
+    },
+
+    {
+      element: <ProtectedRoute />,
+
+      children: [
+        {
+          element: <AppLayout />,
+
+          children: [
+            {
+              index: true,
+
+              element: (
+                <Navigate
+                  to="/dashboard"
+                  replace
+                />
+              ),
+            },
+
+            {
+              path: '/dashboard',
+              element: <DashboardPage />,
+            },
+
+            {
+              path: '/referentiel',
+
+              element: (
+                <RequireAccess
+                  permission="REFERENTIEL_CONSULTER"
+                >
+                  <ReferentielPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/enseignements',
+
+              element: (
+                <RequireAccess
+                  permission="ENSEIGNEMENTS_CONSULTER"
+                >
+                  <EnseignementsPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/pedagogie',
+
+              element: (
+                <RequireAccess
+                  permission="SEANCES_VALIDER"
+                >
+                  <PedagogiePage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/qhse',
+
+              element: (
+                <RequireAccess
+                  permission="QHSE_CONSULTER"
+                >
+                  <QhsePage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/scolarite',
+
+              element: (
+                <RequireAccess
+                  permission="SCOLARITE_GERER"
+                >
+                  <ScolaritePage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/diplomes',
+
+              element: (
+                <RequireAccess
+                  anyPermission={[
+                    'ELIGIBILITE_CONSULTER',
+                    'ELIGIBILITE_GERER',
+                    'DIPLOMES_GERER',
+                    'DIPLOME_DEMANDER',
+                  ]}
+                >
+                  <DiplomesPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/utilisateurs',
+
+              element: (
+                <RequireAccess
+                  permission="UTILISATEURS_GERER"
+                >
+                  <UtilisateursPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/audit',
+
+              element: (
+                <RequireAccess
+                  permission="AUDIT_CONSULTER"
+                >
+                  <AuditPage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/notifications',
+              element: <NotificationsPage />,
+            },
+
+            {
+              path: '/me',
+              element: <MonEspacePage />,
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      path: '*',
+      element: <NotFoundPage />,
+    },
+  ]);

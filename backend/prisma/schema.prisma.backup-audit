@@ -1,0 +1,378 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Filiere {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  nom         String
+  description String?
+  actif       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  formations Formation[]
+}
+
+model Formation {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  nom         String
+  description String?
+  actif       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  filiereId Int
+  filiere   Filiere @relation(fields: [filiereId], references: [id])
+
+  niveaux Niveau[]
+}
+
+model Niveau {
+  id       Int     @id @default(autoincrement())
+  code     String
+  nom      String
+  ordre    Int
+  terminal Boolean @default(false)
+  actif    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  formationId Int
+  formation   Formation @relation(fields: [formationId], references: [id])
+
+  classes Classe[]
+  cours   Cours[]
+
+  @@unique([formationId, code])
+}
+
+model Classe {
+  id    Int     @id @default(autoincrement())
+  code  String
+  nom   String
+  annee String
+  actif Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  niveauId Int
+  niveau   Niveau @relation(fields: [niveauId], references: [id])
+
+  affectations AffectationEnseignement[]
+  inscriptions InscriptionEtudiant[]
+
+  @@unique([niveauId, code, annee])
+}
+
+model Cours {
+  id            Int     @id @default(autoincrement())
+  code          String
+  intitule      String
+  volumeHoraire Int
+  credits       Int
+  semestre      Int
+  actif         Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  niveauId Int
+  niveau   Niveau @relation(fields: [niveauId], references: [id])
+
+  affectations AffectationEnseignement[]
+
+  @@unique([niveauId, code])
+}
+
+model Enseignant {
+  id         Int     @id @default(autoincrement())
+  matricule  String  @unique
+  nom        String
+  prenom     String
+  email      String? @unique
+  telephone  String?
+  specialite String?
+  statut     String?
+  actif      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  affectations AffectationEnseignement[]
+  utilisateur  Utilisateur?
+}
+
+model AffectationEnseignement {
+  id              Int     @id @default(autoincrement())
+  anneeAcademique String
+  actif           Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enseignantId Int
+  coursId      Int
+  classeId     Int
+
+  enseignant Enseignant @relation(fields: [enseignantId], references: [id], onDelete: Restrict)
+  cours      Cours      @relation(fields: [coursId], references: [id], onDelete: Restrict)
+  classe     Classe     @relation(fields: [classeId], references: [id], onDelete: Restrict)
+
+  seances SeanceCours[]
+
+  @@unique([enseignantId, coursId, classeId, anneeAcademique])
+  @@index([enseignantId])
+  @@index([coursId])
+  @@index([classeId])
+  @@index([anneeAcademique])
+}
+
+enum StatutSeance {
+  DECLAREE
+  VALIDEE
+  REJETEE
+  ANNULEE
+}
+
+model SeanceCours {
+  id           Int          @id @default(autoincrement())
+  dateSeance   DateTime
+  heureDebut   String
+  heureFin     String
+  dureeMinutes Int
+  contenu      String
+  observations String?
+  motifRejet   String?
+  valideeLe    DateTime?
+  rejeteeLe    DateTime?
+  statut       StatutSeance @default(DECLAREE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  affectationId Int
+  affectation   AffectationEnseignement @relation(fields: [affectationId], references: [id], onDelete: Restrict)
+
+  @@unique([affectationId, dateSeance, heureDebut])
+  @@index([affectationId])
+  @@index([dateSeance])
+  @@index([statut])
+}
+
+enum StatutInscription {
+  ACTIVE
+  SUSPENDUE
+  ABANDONNEE
+  TERMINEE
+}
+
+model Etudiant {
+  id            Int       @id @default(autoincrement())
+  matricule     String    @unique
+  nom           String
+  prenom        String
+  dateNaissance DateTime?
+  email         String?   @unique
+  telephone     String?
+  actif         Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inscriptions InscriptionEtudiant[]
+  utilisateur  Utilisateur?
+}
+
+model InscriptionEtudiant {
+  id              Int               @id @default(autoincrement())
+  anneeAcademique String
+  statut          StatutInscription @default(ACTIVE)
+  dateInscription DateTime          @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  etudiantId Int
+  classeId   Int
+
+  etudiant             Etudiant              @relation(fields: [etudiantId], references: [id], onDelete: Restrict)
+  classe               Classe                @relation(fields: [classeId], references: [id], onDelete: Restrict)
+  validationAcademique ValidationAcademique?
+  demandeDiplome       DemandeDiplome?
+
+  @@unique([etudiantId, anneeAcademique])
+  @@index([etudiantId])
+  @@index([classeId])
+  @@index([anneeAcademique])
+  @@index([statut])
+}
+
+enum DecisionAcademique {
+  EN_ATTENTE
+  ADMIS
+  AJOURNE
+  REFUSE
+}
+
+model ValidationAcademique {
+  id               Int                @id @default(autoincrement())
+  decision         DecisionAcademique @default(EN_ATTENTE)
+  creditsObtenus   Int                @default(0)
+  creditsRequis    Int
+  stageRequis      Boolean            @default(false)
+  stageValide      Boolean            @default(false)
+  memoireRequis    Boolean            @default(false)
+  memoireValide    Boolean            @default(false)
+  dateDeliberation DateTime?
+  observations     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inscriptionId Int                 @unique
+  inscription   InscriptionEtudiant @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+
+  @@index([decision])
+}
+
+enum StatutDemandeDiplome {
+  DEMANDEE
+  EN_VERIFICATION
+  A_CORRIGER
+  VALIDEE
+  REJETEE
+  GENEREE
+  SIGNEE
+  DISPONIBLE
+  RETIREE
+  ANNULEE
+}
+
+model DemandeDiplome {
+  id               Int                  @id @default(autoincrement())
+  statut           StatutDemandeDiplome @default(DEMANDEE)
+  motif            String?
+  dateDemande      DateTime             @default(now())
+  dateVerification DateTime?
+  dateValidation   DateTime?
+  dateRejet        DateTime?
+  dateAnnulation   DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  inscriptionId Int                 @unique
+  inscription   InscriptionEtudiant @relation(fields: [inscriptionId], references: [id], onDelete: Restrict)
+
+  diplome Diplome?
+
+  @@index([statut])
+  @@index([dateDemande])
+}
+
+model Diplome {
+  id          Int    @id @default(autoincrement())
+  numero      String @unique
+  typeDiplome String
+  intitule    String
+
+  matriculeTitulaire String
+  nomTitulaire       String
+  prenomTitulaire    String
+
+  formationLibelle String
+  niveauLibelle    String
+  anneeAcademique  String
+
+  dateGeneration    DateTime  @default(now())
+  dateSignature     DateTime?
+  dateDisponibilite DateTime?
+  dateRetrait       DateTime?
+  retirePar         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  demandeId Int            @unique
+  demande   DemandeDiplome @relation(fields: [demandeId], references: [id], onDelete: Restrict)
+
+  @@index([numero])
+  @@index([matriculeTitulaire])
+}
+
+model Utilisateur {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  motDePasseHash    String
+  nomAffichage      String?
+  actif             Boolean   @default(true)
+  derniereConnexion DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  etudiantId   Int? @unique
+  enseignantId Int? @unique
+
+  etudiant   Etudiant?   @relation(fields: [etudiantId], references: [id], onDelete: SetNull)
+  enseignant Enseignant? @relation(fields: [enseignantId], references: [id], onDelete: SetNull)
+
+  roles UtilisateurRole[]
+
+  @@index([email])
+  @@index([actif])
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  nom         String
+  description String?
+  actif       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  utilisateurs UtilisateurRole[]
+  permissions  RolePermission[]
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  nom         String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles RolePermission[]
+}
+
+model UtilisateurRole {
+  utilisateurId Int
+  roleId        Int
+  attribueLe    DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id], onDelete: Cascade)
+  role        Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([utilisateurId, roleId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}

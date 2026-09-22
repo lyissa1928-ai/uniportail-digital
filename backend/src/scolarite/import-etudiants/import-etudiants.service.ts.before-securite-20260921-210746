@@ -1,0 +1,1259 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+
+import {
+  ConfigService,
+} from '@nestjs/config';
+
+import * as bcrypt from 'bcryptjs';
+import ExcelJS from 'exceljs';
+import nodemailer from 'nodemailer';
+
+import {
+  randomBytes,
+} from 'node:crypto';
+
+import {
+  PrismaService,
+} from '../../prisma/prisma.service.js';
+
+import {
+  CreateEtudiantAvecCompteDto,
+} from './dto/create-etudiant-avec-compte.dto.js';
+
+import {
+  ImportEtudiantsMetaDto,
+} from './dto/import-etudiants-meta.dto.js';
+
+type LigneImport = {
+  ligne: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  dateNaissance?: string;
+  email: string;
+  telephone?: string;
+  erreurs: string[];
+};
+
+@Injectable()
+export class ImportEtudiantsService {
+  constructor(
+    private readonly prisma:
+      PrismaService,
+
+    private readonly config:
+      ConfigService,
+  ) {}
+
+  private nettoyer(
+    value: unknown,
+  ): string {
+    return String(
+      value ?? '',
+    ).trim();
+  }
+
+  private emailValide(
+    email: string,
+  ): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+      email,
+    );
+  }
+
+  private dateValide(
+    value?: string,
+  ): boolean {
+    if (!value) {
+      return true;
+    }
+
+    const date =
+      new Date(
+        value + 'T00:00:00.000Z',
+      );
+
+    return !Number.isNaN(
+      date.getTime(),
+    );
+  }
+
+  private datePrisma(
+    value?: string,
+  ): Date | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return new Date(
+      value + 'T00:00:00.000Z',
+    );
+  }
+
+  private genererMotDePasse(): string {
+    return (
+      'Tmp-' +
+      randomBytes(12)
+        .toString('base64url') +
+      '!'
+    );
+  }
+
+  private async verifierClasse(
+    classeId: number,
+  ) {
+    const classe =
+      await this.prisma.classe.findUnique({
+        where: {
+          id: classeId,
+        },
+      });
+
+    if (!classe) {
+      throw new NotFoundException(
+        'Classe acadÃƒÆ’Ã‚Â©mique introuvable',
+      );
+    }
+
+    return classe;
+  }
+
+  private async verifierDisponibilite(
+    matricule: string,
+    email: string,
+  ) {
+    const normalizedMatricule =
+      matricule
+        .trim()
+        .toUpperCase();
+
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase();
+
+    const [
+      etudiantMatricule,
+      etudiantEmail,
+      utilisateurEmail,
+    ] =
+      await Promise.all([
+        this.prisma.etudiant.findUnique({
+          where: {
+            matricule:
+              normalizedMatricule,
+          },
+        }),
+
+        this.prisma.etudiant.findUnique({
+          where: {
+            email:
+              normalizedEmail,
+          },
+        }),
+
+        this.prisma.utilisateur.findUnique({
+          where: {
+            email:
+              normalizedEmail,
+          },
+        }),
+      ]);
+
+    if (etudiantMatricule) {
+      throw new ConflictException(
+        'Ce numÃƒÆ’Ã‚Â©ro de carte ÃƒÆ’Ã‚Â©tudiant / matricule existe dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â ',
+      );
+    }
+
+    if (
+      etudiantEmail ||
+      utilisateurEmail
+    ) {
+      throw new ConflictException(
+        'Cette adresse e-mail existe dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â ',
+      );
+    }
+
+    return {
+      matricule:
+        normalizedMatricule,
+
+      email:
+        normalizedEmail,
+    };
+  }
+
+  private async envoyerAcces(
+    email: string,
+    nomAffichage: string,
+    matricule: string,
+    motDePasseTemporaire: string,
+  ) {
+    const host =
+      this.config.get<string>(
+        'SMTP_HOST',
+      );
+
+    const from =
+      this.config.get<string>(
+        'SMTP_FROM',
+      );
+
+    if (
+      !host ||
+      !from
+    ) {
+      return {
+        envoye: false,
+        statut:
+          'SMTP_NON_CONFIGURE',
+      };
+    }
+
+    const port =
+      Number(
+        this.config.get<string>(
+          'SMTP_PORT',
+        ) ?? '587',
+      );
+
+    const secure =
+      String(
+        this.config.get<string>(
+          'SMTP_SECURE',
+        ) ?? 'false',
+      ).toLowerCase() === 'true';
+
+    const user =
+      this.config.get<string>(
+        'SMTP_USER',
+      );
+
+    const password =
+      this.config.get<string>(
+        'SMTP_PASSWORD',
+      );
+
+    const auth =
+      user
+        ? {
+            user,
+            pass: password,
+          }
+        : undefined;
+
+    try {
+      const transporter =
+        nodemailer.createTransport({
+          host,
+          port,
+          secure,
+          auth,
+        });
+
+      await transporter.sendMail({
+        from,
+        to: email,
+        subject:
+          'CrÃƒÆ’Ã‚Â©ation de votre compte ÃƒÆ’Ã‚Â©tudiant',
+
+        text:
+          'Bonjour ' +
+          nomAffichage +
+          ',\n\n' +
+          'Votre compte ÃƒÆ’Ã‚Â©tudiant a ÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â© crÃƒÆ’Ã‚Â©ÃƒÆ’Ã‚Â©.\n\n' +
+          'Matricule / numÃƒÆ’Ã‚Â©ro de carte : ' +
+          matricule +
+          '\n' +
+          'Identifiant : ' +
+          email +
+          '\n' +
+          'Mot de passe temporaire : ' +
+          motDePasseTemporaire +
+          '\n\n' +
+          'Veuillez modifier votre mot de passe aprÃƒÆ’Ã‚Â¨s votre premiÃƒÆ’Ã‚Â¨re connexion.\n',
+      });
+
+      return {
+        envoye: true,
+        statut:
+          'ENVOYE',
+      };
+    }
+    catch {
+      return {
+        envoye: false,
+        statut:
+          'ECHEC_ENVOI',
+      };
+    }
+  }
+
+  private async creerEtudiantComplet(
+    dto: CreateEtudiantAvecCompteDto,
+  ) {
+    await this.verifierClasse(
+      dto.classeId,
+    );
+
+    const normalized =
+      await this.verifierDisponibilite(
+        dto.matricule,
+        dto.email,
+      );
+
+    const role =
+      await this.prisma.role.findUnique({
+        where: {
+          code: 'ETUDIANT',
+        },
+      });
+
+    if (!role) {
+      throw new NotFoundException(
+        'Le rÃƒÆ’Ã‚Â´le ETUDIANT est introuvable. Synchronisez le rÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rentiel de sÃƒÆ’Ã‚Â©curitÃƒÆ’Ã‚Â©.',
+      );
+    }
+
+    const motDePasseTemporaire =
+      this.genererMotDePasse();
+
+    const hash =
+      await bcrypt.hash(
+        motDePasseTemporaire,
+        12,
+      );
+
+    const result =
+      await this.prisma.$transaction(
+        async (tx) => {
+          const etudiant =
+            await tx.etudiant.create({
+              data: {
+                matricule:
+                  normalized.matricule,
+
+                nom:
+                  dto.nom.trim(),
+
+                prenom:
+                  dto.prenom.trim(),
+
+                dateNaissance:
+                  this.datePrisma(
+                    dto.dateNaissance,
+                  ),
+
+                email:
+                  normalized.email,
+
+                telephone:
+                  dto.telephone
+                    ?.trim() ||
+                  null,
+
+                actif:
+                  true,
+              },
+            });
+
+          const inscription =
+            await tx.inscriptionEtudiant.create({
+              data: {
+                etudiantId:
+                  etudiant.id,
+
+                classeId:
+                  dto.classeId,
+
+                anneeAcademique:
+                  dto.anneeAcademique,
+
+                statut:
+                  (
+                    dto.statut ??
+                    'ACTIVE'
+                  ) as any,
+              },
+            });
+
+          const utilisateur =
+            await tx.utilisateur.create({
+              data: {
+                email:
+                  normalized.email,
+
+                motDePasseHash:
+                  hash,
+
+                nomAffichage:
+                  (
+                    dto.prenom.trim() +
+                    ' ' +
+                    dto.nom.trim()
+                  ).trim(),
+
+                actif:
+                  true,
+
+                etudiantId:
+                  etudiant.id,
+
+                roles: {
+                  create: {
+                    roleId:
+                      role.id,
+                  },
+                },
+              },
+
+              select: {
+                id: true,
+                email: true,
+                actif: true,
+              },
+            });
+
+          return {
+            etudiant,
+            inscription,
+            utilisateur,
+          };
+        },
+      );
+
+    const mail =
+      await this.envoyerAcces(
+        normalized.email,
+        (
+          dto.prenom.trim() +
+          ' ' +
+          dto.nom.trim()
+        ).trim(),
+        normalized.matricule,
+        motDePasseTemporaire,
+      );
+
+    return {
+      ...result,
+
+      acces: {
+        identifiant:
+          normalized.email,
+
+        emailEnvoye:
+          mail.envoye,
+
+        statutEmail:
+          mail.statut,
+      },
+    };
+  }
+
+  async creerIndividuellement(
+    dto: CreateEtudiantAvecCompteDto,
+  ) {
+    return this.creerEtudiantComplet(
+      dto,
+    );
+  }
+
+  async genererTemplate() {
+    const workbook =
+      new ExcelJS.Workbook();
+
+    workbook.creator =
+      'Plateforme Suivi Evaluation';
+
+    const sheet =
+      workbook.addWorksheet(
+        'Etudiants',
+      );
+
+    sheet.columns = [
+      {
+        header:
+          'matricule',
+        key:
+          'matricule',
+        width:
+          24,
+      },
+      {
+        header:
+          'nom',
+        key:
+          'nom',
+        width:
+          25,
+      },
+      {
+        header:
+          'prenom',
+        key:
+          'prenom',
+        width:
+          25,
+      },
+      {
+        header:
+          'date_naissance',
+        key:
+          'date_naissance',
+        width:
+          18,
+      },
+      {
+        header:
+          'email',
+        key:
+          'email',
+        width:
+          35,
+      },
+      {
+        header:
+          'telephone',
+        key:
+          'telephone',
+        width:
+          20,
+      },
+    ];
+
+    sheet.getRow(1).font = {
+      bold: true,
+    };
+
+    sheet.views = [
+      {
+        state:
+          'frozen',
+        ySplit:
+          1,
+      },
+    ];
+
+    sheet.addRow({
+      matricule:
+        '2026-LIC-00001',
+
+      nom:
+        'DIOP',
+
+      prenom:
+        'Awa',
+
+      date_naissance:
+        '2003-04-15',
+
+      email:
+        'awa.diop@example.com',
+
+      telephone:
+        '770000000',
+    });
+
+    sheet.getColumn(
+      'date_naissance',
+    ).numFmt =
+      '@';
+
+    for (
+      let row = 2;
+      row <= 1001;
+      row++
+    ) {
+      sheet.getCell(
+        'A' + row,
+      ).numFmt = '@';
+
+      sheet.getCell(
+        'D' + row,
+      ).numFmt = '@';
+
+      sheet.getCell(
+        'F' + row,
+      ).numFmt = '@';
+    }
+
+    const instructions =
+      workbook.addWorksheet(
+        'Instructions',
+      );
+
+    instructions.columns = [
+      {
+        key: 'texte',
+        width: 100,
+      },
+    ];
+
+    instructions.addRow({
+      texte:
+        'Chaque ÃƒÆ’Ã‚Â©tudiant doit possÃƒÆ’Ã‚Â©der un matricule unique correspondant ÃƒÆ’Ã‚Â  son numÃƒÆ’Ã‚Â©ro de carte ÃƒÆ’Ã‚Â©tudiant.',
+    });
+
+    instructions.addRow({
+      texte:
+        'LÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢adresse e-mail est obligatoire car elle sert ÃƒÆ’Ã‚Â  crÃƒÆ’Ã‚Â©er le compte ÃƒÆ’Ã‚Â©tudiant.',
+    });
+
+    instructions.addRow({
+      texte:
+        'Ne modifiez pas les noms des colonnes de la feuille Etudiants.',
+    });
+
+    instructions.addRow({
+      texte:
+        'Format de date recommandÃƒÆ’Ã‚Â© : AAAA-MM-JJ.',
+    });
+
+    const buffer =
+      await workbook.xlsx.writeBuffer();
+
+    return Buffer.from(
+      buffer,
+    );
+  }
+
+  private lireCellule(
+    cell: ExcelJS.Cell,
+  ): string {
+    if (
+      cell.value instanceof Date
+    ) {
+      const year =
+        cell.value.getFullYear();
+
+      const month =
+        String(
+          cell.value.getMonth() + 1,
+        ).padStart(
+          2,
+          '0',
+        );
+
+      const day =
+        String(
+          cell.value.getDate(),
+        ).padStart(
+          2,
+          '0',
+        );
+
+      return (
+        year +
+        '-' +
+        month +
+        '-' +
+        day
+      );
+    }
+
+    return this.nettoyer(
+      cell.text ||
+      cell.value,
+    );
+  }
+
+  private async analyserFichier(
+    buffer: Buffer,
+  ): Promise<LigneImport[]> {
+    const workbook =
+      new ExcelJS.Workbook();
+
+    try {
+      await workbook.xlsx.load(
+        buffer as any,
+      );
+    }
+    catch {
+      throw new BadRequestException(
+        'Le fichier Excel est invalide',
+      );
+    }
+
+    const sheet =
+      workbook.worksheets[0];
+
+    if (!sheet) {
+      throw new BadRequestException(
+        'Le fichier Excel ne contient aucune feuille',
+      );
+    }
+
+    const headers =
+      new Map<string, number>();
+
+    sheet.getRow(1)
+      .eachCell(
+        (
+          cell,
+          colNumber,
+        ) => {
+          headers.set(
+            this.nettoyer(
+              cell.text,
+            ).toLowerCase(),
+            colNumber,
+          );
+        },
+      );
+
+    const required = [
+      'matricule',
+      'nom',
+      'prenom',
+      'email',
+    ];
+
+    for (
+      const header of required
+    ) {
+      if (
+        !headers.has(
+          header,
+        )
+      ) {
+        throw new BadRequestException(
+          'Colonne obligatoire absente : ' +
+          header,
+        );
+      }
+    }
+
+    const rows:
+      LigneImport[] = [];
+
+    const matriculesFichier =
+      new Set<string>();
+
+    const emailsFichier =
+      new Set<string>();
+
+    for (
+      let rowNumber = 2;
+      rowNumber <= sheet.rowCount;
+      rowNumber++
+    ) {
+      const row =
+        sheet.getRow(
+          rowNumber,
+        );
+
+      const read =
+        (
+          column:
+            string,
+        ) => {
+          const index =
+            headers.get(
+              column,
+            );
+
+          if (!index) {
+            return '';
+          }
+
+          return this.lireCellule(
+            row.getCell(
+              index,
+            ),
+          );
+        };
+
+      const matricule =
+        read(
+          'matricule',
+        ).toUpperCase();
+
+      const nom =
+        read(
+          'nom',
+        );
+
+      const prenom =
+        read(
+          'prenom',
+        );
+
+      const dateNaissance =
+        read(
+          'date_naissance',
+        );
+
+      const email =
+        read(
+          'email',
+        ).toLowerCase();
+
+      const telephone =
+        read(
+          'telephone',
+        );
+
+      if (
+        !matricule &&
+        !nom &&
+        !prenom &&
+        !email
+      ) {
+        continue;
+      }
+
+      const erreurs:
+        string[] = [];
+
+      if (!matricule) {
+        erreurs.push(
+          'Matricule obligatoire',
+        );
+      }
+
+      if (!nom) {
+        erreurs.push(
+          'Nom obligatoire',
+        );
+      }
+
+      if (!prenom) {
+        erreurs.push(
+          'PrÃƒÆ’Ã‚Â©nom obligatoire',
+        );
+      }
+
+      if (!email) {
+        erreurs.push(
+          'E-mail obligatoire',
+        );
+      }
+      else if (
+        !this.emailValide(
+          email,
+        )
+      ) {
+        erreurs.push(
+          'Format e-mail invalide',
+        );
+      }
+
+      if (
+        dateNaissance &&
+        !this.dateValide(
+          dateNaissance,
+        )
+      ) {
+        erreurs.push(
+          'Date de naissance invalide',
+        );
+      }
+
+      if (
+        matricule &&
+        matriculesFichier.has(
+          matricule,
+        )
+      ) {
+        erreurs.push(
+          'Matricule en doublon dans le fichier',
+        );
+      }
+
+      if (
+        email &&
+        emailsFichier.has(
+          email,
+        )
+      ) {
+        erreurs.push(
+          'E-mail en doublon dans le fichier',
+        );
+      }
+
+      if (matricule) {
+        matriculesFichier.add(
+          matricule,
+        );
+      }
+
+      if (email) {
+        emailsFichier.add(
+          email,
+        );
+      }
+
+      rows.push({
+        ligne:
+          rowNumber,
+
+        matricule,
+        nom,
+        prenom,
+
+        dateNaissance:
+          dateNaissance ||
+          undefined,
+
+        email,
+
+        telephone:
+          telephone ||
+          undefined,
+
+        erreurs,
+      });
+
+      if (
+        rows.length > 1000
+      ) {
+        throw new BadRequestException(
+          'Maximum 1000 ÃƒÆ’Ã‚Â©tudiants par fichier',
+        );
+      }
+    }
+
+    const matricules =
+      rows
+        .filter(
+          (r) =>
+            r.matricule,
+        )
+        .map(
+          (r) =>
+            r.matricule,
+        );
+
+    const emails =
+      rows
+        .filter(
+          (r) =>
+            r.email,
+        )
+        .map(
+          (r) =>
+            r.email,
+        );
+
+    const [
+      existingStudents,
+      existingUsers,
+    ] =
+      await Promise.all([
+        this.prisma.etudiant.findMany({
+          where: {
+            OR: [
+              {
+                matricule: {
+                  in:
+                    matricules,
+                },
+              },
+              {
+                email: {
+                  in:
+                    emails,
+                },
+              },
+            ],
+          },
+
+          select: {
+            matricule: true,
+            email: true,
+          },
+        }),
+
+        this.prisma.utilisateur.findMany({
+          where: {
+            email: {
+              in:
+                emails,
+            },
+          },
+
+          select: {
+            email: true,
+          },
+        }),
+      ]);
+
+    const matriculesExistants =
+      new Set(
+        existingStudents.map(
+          (e) =>
+            e.matricule,
+        ),
+      );
+
+    const emailsExistants =
+      new Set(
+        [
+          ...existingStudents
+            .map(
+              (e) =>
+                e.email,
+            )
+            .filter(
+              Boolean,
+            ),
+
+          ...existingUsers.map(
+            (u) =>
+              u.email,
+          ),
+        ] as string[],
+      );
+
+    for (
+      const row of rows
+    ) {
+      if (
+        matriculesExistants.has(
+          row.matricule,
+        )
+      ) {
+        row.erreurs.push(
+          'Matricule dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  enregistrÃƒÆ’Ã‚Â©',
+        );
+      }
+
+      if (
+        emailsExistants.has(
+          row.email,
+        )
+      ) {
+        row.erreurs.push(
+          'E-mail dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  enregistrÃƒÆ’Ã‚Â©',
+        );
+      }
+    }
+
+    return rows;
+  }
+
+  async analyser(
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      size: number;
+    },
+    meta:
+      ImportEtudiantsMetaDto,
+  ) {
+    if (!file) {
+      throw new BadRequestException(
+        'Fichier Excel obligatoire',
+      );
+    }
+
+    if (
+      !file.originalname
+        .toLowerCase()
+        .endsWith(
+          '.xlsx',
+        )
+    ) {
+      throw new BadRequestException(
+        'Seuls les fichiers .xlsx sont acceptÃƒÆ’Ã‚Â©s',
+      );
+    }
+
+    await this.verifierClasse(
+      meta.classeId,
+    );
+
+    const rows =
+      await this.analyserFichier(
+        file.buffer,
+      );
+
+    const valides =
+      rows.filter(
+        (row) =>
+          row.erreurs.length ===
+          0,
+      );
+
+    const invalides =
+      rows.filter(
+        (row) =>
+          row.erreurs.length >
+          0,
+      );
+
+    return {
+      classeId:
+        meta.classeId,
+
+      anneeAcademique:
+        meta.anneeAcademique,
+
+      total:
+        rows.length,
+
+      valides:
+        valides.length,
+
+      invalides:
+        invalides.length,
+
+      lignes:
+        rows.map(
+          (row) => ({
+            ...row,
+
+            statut:
+              row.erreurs.length ===
+              0
+                ? 'VALIDE'
+                : 'ERREUR',
+          }),
+        ),
+    };
+  }
+
+  async confirmer(
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      size: number;
+    },
+    meta:
+      ImportEtudiantsMetaDto,
+  ) {
+    const analyse =
+      await this.analyser(
+        file,
+        meta,
+      );
+
+    const valides =
+      analyse.lignes.filter(
+        (row) =>
+          row.statut ===
+          'VALIDE',
+      );
+
+    const resultats:
+      any[] = [];
+
+    for (
+      const row of valides
+    ) {
+      try {
+        const result =
+          await this.creerEtudiantComplet({
+            matricule:
+              row.matricule,
+
+            nom:
+              row.nom,
+
+            prenom:
+              row.prenom,
+
+            dateNaissance:
+              row.dateNaissance,
+
+            email:
+              row.email,
+
+            telephone:
+              row.telephone,
+
+            classeId:
+              meta.classeId,
+
+            anneeAcademique:
+              meta.anneeAcademique,
+
+            statut:
+              meta.statut ??
+              'ACTIVE',
+          });
+
+        resultats.push({
+          ligne:
+            row.ligne,
+
+          matricule:
+            row.matricule,
+
+          statut:
+            'IMPORTE',
+
+          emailEnvoye:
+            result.acces
+              .emailEnvoye,
+
+          statutEmail:
+            result.acces
+              .statutEmail,
+        });
+      }
+      catch (
+        error: any
+      ) {
+        resultats.push({
+          ligne:
+            row.ligne,
+
+          matricule:
+            row.matricule,
+
+          statut:
+            'ECHEC',
+
+          erreur:
+            error?.message ??
+            'Erreur inconnue',
+        });
+      }
+    }
+
+    return {
+      analyse: {
+        total:
+          analyse.total,
+
+        valides:
+          analyse.valides,
+
+        invalides:
+          analyse.invalides,
+      },
+
+      import: {
+        importes:
+          resultats.filter(
+            (r) =>
+              r.statut ===
+              'IMPORTE',
+          ).length,
+
+        echecs:
+          resultats.filter(
+            (r) =>
+              r.statut ===
+              'ECHEC',
+          ).length,
+      },
+
+      lignesInvalides:
+        analyse.lignes.filter(
+          (row) =>
+            row.statut ===
+            'ERREUR',
+        ),
+
+      resultats,
+    };
+  }
+}

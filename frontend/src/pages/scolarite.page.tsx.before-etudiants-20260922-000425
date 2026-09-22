@@ -1,0 +1,1932 @@
+﻿import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react';
+
+import {
+  api,
+  ApiException,
+} from '../lib/api';
+
+type Tab =
+  | 'etudiants'
+  | 'inscriptions'
+  | 'parcours';
+
+interface Etudiant {
+  id: number;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  dateNaissance?: string | null;
+  email?: string | null;
+  telephone?: string | null;
+  actif: boolean;
+}
+
+interface Inscription {
+  id: number;
+  anneeAcademique: string;
+  statut: string;
+  dateInscription?: string;
+
+  etudiantId: number;
+  classeId: number;
+
+  etudiant?: Etudiant;
+  classe?: Classe;
+}
+
+interface Classe {
+  id: number;
+  code: string;
+  nom: string;
+  annee: string;
+  niveauId: number;
+  actif: boolean;
+}
+
+interface Niveau {
+  id: number;
+  code: string;
+  nom: string;
+  formationId: number;
+}
+
+interface Formation {
+  id: number;
+  code: string;
+  nom: string;
+}
+
+const emptyEtudiant = {
+  matricule: '',
+  nom: '',
+  prenom: '',
+  dateNaissance: '',
+  email: '',
+  telephone: '',
+  actif: true,
+};
+
+const emptyInscription = {
+  etudiantId: '',
+  classeId: '',
+  anneeAcademique: '2026-2027',
+  statut: 'ACTIVE',
+};
+
+export function ScolaritePage() {
+  const [
+    tab,
+    setTab,
+  ] =
+    useState<Tab>(
+      'etudiants',
+    );
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+  const [
+    search,
+    setSearch,
+  ] =
+    useState('');
+
+  const [
+    error,
+    setError,
+  ] =
+    useState('');
+
+  const [
+    message,
+    setMessage,
+  ] =
+    useState('');
+
+  const [
+    editingEtudiantId,
+    setEditingEtudiantId,
+  ] =
+    useState<number | null>(
+      null,
+    );
+
+  const [
+    editingInscriptionId,
+    setEditingInscriptionId,
+  ] =
+    useState<number | null>(
+      null,
+    );
+
+  const [
+    selectedEtudiantId,
+    setSelectedEtudiantId,
+  ] =
+    useState<number | null>(
+      null,
+    );
+
+  const [
+    etudiants,
+    setEtudiants,
+  ] =
+    useState<Etudiant[]>([]);
+
+  const [
+    inscriptions,
+    setInscriptions,
+  ] =
+    useState<Inscription[]>([]);
+
+  const [
+    classes,
+    setClasses,
+  ] =
+    useState<Classe[]>([]);
+
+  const [
+    niveaux,
+    setNiveaux,
+  ] =
+    useState<Niveau[]>([]);
+
+  const [
+    formations,
+    setFormations,
+  ] =
+    useState<Formation[]>([]);
+
+  const [
+    etudiantForm,
+    setEtudiantForm,
+  ] =
+    useState(
+      emptyEtudiant,
+    );
+
+  const [
+    inscriptionForm,
+    setInscriptionForm,
+  ] =
+    useState(
+      emptyInscription,
+    );
+
+  const load =
+    useCallback(
+      async () => {
+        setLoading(true);
+        setError('');
+
+        try {
+          const [
+            etudiantsData,
+            inscriptionsData,
+            classesData,
+            niveauxData,
+            formationsData,
+          ] =
+            await Promise.all([
+              api<Etudiant[]>(
+                '/etudiants',
+              ),
+
+              api<Inscription[]>(
+                '/inscriptions',
+              ),
+
+              api<Classe[]>(
+                '/classes',
+              ),
+
+              api<Niveau[]>(
+                '/niveaux',
+              ),
+
+              api<Formation[]>(
+                '/formations',
+              ),
+            ]);
+
+          setEtudiants(
+            etudiantsData,
+          );
+
+          setInscriptions(
+            inscriptionsData,
+          );
+
+          setClasses(
+            classesData,
+          );
+
+          setNiveaux(
+            niveauxData,
+          );
+
+          setFormations(
+            formationsData,
+          );
+        }
+        catch (err) {
+          setError(
+            err instanceof ApiException
+              ? err.message
+              : 'Chargement de la scolarité impossible.',
+          );
+        }
+        finally {
+          setLoading(false);
+        }
+      },
+      [],
+    );
+
+  useEffect(
+    () => {
+      void load();
+    },
+    [
+      load,
+    ],
+  );
+
+  function notify(
+    text: string,
+  ) {
+    setMessage(text);
+    setError('');
+
+    window.setTimeout(
+      () => {
+        setMessage('');
+      },
+      2500,
+    );
+  }
+
+  function fail(
+    err: unknown,
+  ) {
+    setError(
+      err instanceof ApiException
+        ? err.message
+        : 'Une erreur est survenue.',
+    );
+  }
+
+  function resetEtudiantForm() {
+    setEditingEtudiantId(
+      null,
+    );
+
+    setEtudiantForm(
+      emptyEtudiant,
+    );
+  }
+
+  function resetInscriptionForm() {
+    setEditingInscriptionId(
+      null,
+    );
+
+    setInscriptionForm(
+      emptyInscription,
+    );
+  }
+
+  async function saveEtudiant(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    try {
+      await api(
+        editingEtudiantId
+          ? `/etudiants/${editingEtudiantId}`
+          : '/etudiants',
+        {
+          method:
+            editingEtudiantId
+              ? 'PATCH'
+              : 'POST',
+
+          body:
+            JSON.stringify({
+              matricule:
+                etudiantForm
+                  .matricule,
+
+              nom:
+                etudiantForm
+                  .nom,
+
+              prenom:
+                etudiantForm
+                  .prenom,
+
+              dateNaissance:
+                etudiantForm
+                  .dateNaissance ||
+                undefined,
+
+              email:
+                etudiantForm
+                  .email ||
+                undefined,
+
+              telephone:
+                etudiantForm
+                  .telephone ||
+                undefined,
+
+              actif:
+                etudiantForm
+                  .actif,
+            }),
+        },
+      );
+
+      notify(
+        editingEtudiantId
+          ? 'Étudiant modifié.'
+          : 'Étudiant créé.',
+      );
+
+      resetEtudiantForm();
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function deleteEtudiant(
+    id: number,
+  ) {
+    if (
+      !window.confirm(
+        'Supprimer cet étudiant ?',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api(
+        `/etudiants/${id}`,
+        {
+          method:
+            'DELETE',
+        },
+      );
+
+      notify(
+        'Étudiant supprimé.',
+      );
+
+      if (
+        selectedEtudiantId ===
+        id
+      ) {
+        setSelectedEtudiantId(
+          null,
+        );
+      }
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function saveInscription(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    try {
+      const body =
+        editingInscriptionId
+          ? {
+              classeId:
+                Number(
+                  inscriptionForm
+                    .classeId,
+                ),
+
+              anneeAcademique:
+                inscriptionForm
+                  .anneeAcademique,
+
+              statut:
+                inscriptionForm
+                  .statut,
+            }
+          : {
+              etudiantId:
+                Number(
+                  inscriptionForm
+                    .etudiantId,
+                ),
+
+              classeId:
+                Number(
+                  inscriptionForm
+                    .classeId,
+                ),
+
+              anneeAcademique:
+                inscriptionForm
+                  .anneeAcademique,
+
+              statut:
+                inscriptionForm
+                  .statut,
+            };
+
+      await api(
+        editingInscriptionId
+          ? `/inscriptions/${editingInscriptionId}`
+          : '/inscriptions',
+        {
+          method:
+            editingInscriptionId
+              ? 'PATCH'
+              : 'POST',
+
+          body:
+            JSON.stringify(
+              body,
+            ),
+        },
+      );
+
+      notify(
+        editingInscriptionId
+          ? 'Inscription modifiée.'
+          : 'Inscription créée.',
+      );
+
+      resetInscriptionForm();
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  async function deleteInscription(
+    id: number,
+  ) {
+    if (
+      !window.confirm(
+        'Supprimer cette inscription ?',
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api(
+        `/inscriptions/${id}`,
+        {
+          method:
+            'DELETE',
+        },
+      );
+
+      notify(
+        'Inscription supprimée.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
+  const query =
+    search
+      .trim()
+      .toLowerCase();
+
+  const filteredEtudiants =
+    useMemo(
+      () =>
+        etudiants.filter(
+          (item) =>
+            [
+              item.matricule,
+              item.nom,
+              item.prenom,
+              item.email,
+              item.telephone,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(query),
+        ),
+      [
+        etudiants,
+        query,
+      ],
+    );
+
+  const filteredInscriptions =
+    useMemo(
+      () =>
+        inscriptions.filter(
+          (item) => {
+            const student =
+              item.etudiant ??
+              etudiants.find(
+                (x) =>
+                  x.id ===
+                  item.etudiantId,
+              );
+
+            const classe =
+              item.classe ??
+              classes.find(
+                (x) =>
+                  x.id ===
+                  item.classeId,
+              );
+
+            return [
+              student?.matricule,
+              student?.nom,
+              student?.prenom,
+              classe?.code,
+              classe?.nom,
+              item.anneeAcademique,
+              item.statut,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(query);
+          },
+        ),
+      [
+        inscriptions,
+        etudiants,
+        classes,
+        query,
+      ],
+    );
+
+  const selectedEtudiant =
+    selectedEtudiantId
+      ? etudiants.find(
+          (item) =>
+            item.id ===
+            selectedEtudiantId,
+        ) ?? null
+      : null;
+
+  const selectedParcours =
+    selectedEtudiant
+      ? inscriptions
+          .filter(
+            (item) =>
+              item.etudiantId ===
+              selectedEtudiant.id,
+          )
+          .sort(
+            (a, b) =>
+              b.anneeAcademique
+                .localeCompare(
+                  a.anneeAcademique,
+                ),
+          )
+      : [];
+
+  function getEtudiant(
+    inscription:
+      Inscription,
+  ) {
+    return (
+      inscription.etudiant ??
+      etudiants.find(
+        (item) =>
+          item.id ===
+          inscription.etudiantId,
+      )
+    );
+  }
+
+  function getClasse(
+    inscription:
+      Inscription,
+  ) {
+    return (
+      inscription.classe ??
+      classes.find(
+        (item) =>
+          item.id ===
+          inscription.classeId,
+      )
+    );
+  }
+
+  function getNiveau(
+    classeId: number,
+  ) {
+    const classe =
+      classes.find(
+        (item) =>
+          item.id ===
+          classeId,
+      );
+
+    return niveaux.find(
+      (item) =>
+        item.id ===
+        classe?.niveauId,
+    );
+  }
+
+  function getFormation(
+    classeId: number,
+  ) {
+    const niveau =
+      getNiveau(
+        classeId,
+      );
+
+    return formations.find(
+      (item) =>
+        item.id ===
+        niveau?.formationId,
+    );
+  }
+
+  function openParcours(
+    etudiantId: number,
+  ) {
+    setSelectedEtudiantId(
+      etudiantId,
+    );
+
+    setTab(
+      'parcours',
+    );
+
+    setSearch('');
+  }
+
+  const actifs =
+    etudiants.filter(
+      (item) =>
+        item.actif,
+    ).length;
+
+  const inscriptionsActives =
+    inscriptions.filter(
+      (item) =>
+        item.statut ===
+        'ACTIVE',
+    ).length;
+
+  const terminees =
+    inscriptions.filter(
+      (item) =>
+        item.statut ===
+        'TERMINEE',
+    ).length;
+
+  if (loading) {
+    return (
+      <section className="panel">
+        Chargement de la scolarité...
+      </section>
+    );
+  }
+
+  return (
+    <div className="page-stack">
+
+      <section className="page-header">
+        <div>
+          <span className="eyebrow">
+            Gestion académique
+          </span>
+
+          <h1>
+            Scolarité
+          </h1>
+
+          <p>
+            Étudiants, inscriptions
+            annuelles et historique
+            du parcours académique.
+          </p>
+        </div>
+      </section>
+
+      {message && (
+        <div className="alert success">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="alert error">
+          {error}
+        </div>
+      )}
+
+      <section className="stat-grid">
+
+        <article className="stat-card">
+          <span>
+            Étudiants
+          </span>
+
+          <strong>
+            {etudiants.length}
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            Étudiants actifs
+          </span>
+
+          <strong>
+            {actifs}
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            Inscriptions actives
+          </span>
+
+          <strong>
+            {inscriptionsActives}
+          </strong>
+        </article>
+
+        <article className="stat-card">
+          <span>
+            Parcours terminés
+          </span>
+
+          <strong>
+            {terminees}
+          </strong>
+        </article>
+
+      </section>
+
+      <section className="panel">
+
+        <div className="toolbar">
+
+          <div className="tabs">
+
+            <button
+              type="button"
+              className={
+                tab ===
+                'etudiants'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() => {
+                setTab(
+                  'etudiants',
+                );
+
+                setSearch('');
+              }}
+            >
+              Étudiants
+            </button>
+
+            <button
+              type="button"
+              className={
+                tab ===
+                'inscriptions'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() => {
+                setTab(
+                  'inscriptions',
+                );
+
+                setSearch('');
+              }}
+            >
+              Inscriptions
+            </button>
+
+            <button
+              type="button"
+              disabled={
+                !selectedEtudiant
+              }
+              className={
+                tab ===
+                'parcours'
+                  ? 'tab active'
+                  : 'tab'
+              }
+              onClick={() =>
+                setTab(
+                  'parcours',
+                )
+              }
+            >
+              Parcours académique
+            </button>
+
+          </div>
+
+          {tab !==
+            'parcours' && (
+            <input
+              className="search-input"
+              value={search}
+              onChange={
+                (event) =>
+                  setSearch(
+                    event.target
+                      .value,
+                  )
+              }
+              placeholder="Rechercher..."
+            />
+          )}
+
+        </div>
+
+      </section>
+
+      {tab ===
+        'etudiants' && (
+        <section className="crud-layout">
+
+          <article className="panel table-panel">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Matricule
+                  </th>
+
+                  <th>
+                    Étudiant
+                  </th>
+
+                  <th>
+                    Contact
+                  </th>
+
+                  <th>
+                    État
+                  </th>
+
+                  <th>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {
+                  filteredEtudiants.map(
+                    (item) => (
+                      <tr
+                        key={
+                          item.id
+                        }
+                      >
+                        <td>
+                          <strong>
+                            {
+                              item.matricule
+                            }
+                          </strong>
+                        </td>
+
+                        <td>
+                          <strong>
+                            {
+                              item.prenom
+                            }{' '}
+                            {
+                              item.nom
+                            }
+                          </strong>
+
+                          {
+                            item.dateNaissance &&
+                            (
+                              <small className="table-subtitle">
+                                Né(e) le{' '}
+                                {
+                                  formatDate(
+                                    item.dateNaissance,
+                                  )
+                                }
+                              </small>
+                            )
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            item.email ??
+                            '-'
+                          }
+
+                          {
+                            item.telephone &&
+                            (
+                              <small className="table-subtitle">
+                                {
+                                  item.telephone
+                                }
+                              </small>
+                            )
+                          }
+                        </td>
+
+                        <td>
+                          <span
+                            className={
+                              item.actif
+                                ? 'status active'
+                                : 'status inactive'
+                            }
+                          >
+                            {
+                              item.actif
+                                ? 'Actif'
+                                : 'Inactif'
+                            }
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="action-buttons">
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openParcours(
+                                  item.id,
+                                )
+                              }
+                            >
+                              Parcours
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingEtudiantId(
+                                  item.id,
+                                );
+
+                                setEtudiantForm({
+                                  matricule:
+                                    item.matricule,
+
+                                  nom:
+                                    item.nom,
+
+                                  prenom:
+                                    item.prenom,
+
+                                  dateNaissance:
+                                    item.dateNaissance
+                                      ? item.dateNaissance
+                                          .slice(
+                                            0,
+                                            10,
+                                          )
+                                      : '',
+
+                                  email:
+                                    item.email ??
+                                    '',
+
+                                  telephone:
+                                    item.telephone ??
+                                    '',
+
+                                  actif:
+                                    item.actif,
+                                });
+                              }}
+                            >
+                              Modifier
+                            </button>
+
+                            <button
+                              type="button"
+                              className="danger-link"
+                              onClick={() =>
+                                void deleteEtudiant(
+                                  item.id,
+                                )
+                              }
+                            >
+                              Supprimer
+                            </button>
+
+                          </div>
+                        </td>
+                      </tr>
+                    ),
+                  )
+                }
+              </tbody>
+            </table>
+
+          </article>
+
+          <article className="panel">
+
+            <div className="form-heading">
+              <h2>
+                {
+                  editingEtudiantId
+                    ? 'Modifier étudiant'
+                    : 'Nouvel étudiant'
+                }
+              </h2>
+
+              {
+                editingEtudiantId &&
+                (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={
+                      resetEtudiantForm
+                    }
+                  >
+                    Annuler
+                  </button>
+                )
+              }
+            </div>
+
+            <form
+              className="form-grid"
+              onSubmit={
+                saveEtudiant
+              }
+            >
+
+              <label>
+                Matricule
+
+                <input
+                  required
+                  value={
+                    etudiantForm
+                      .matricule
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        matricule:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Nom
+
+                <input
+                  required
+                  value={
+                    etudiantForm.nom
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        nom:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Prénom
+
+                <input
+                  required
+                  value={
+                    etudiantForm.prenom
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        prenom:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Date de naissance
+
+                <input
+                  type="date"
+                  value={
+                    etudiantForm
+                      .dateNaissance
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        dateNaissance:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                E-mail
+
+                <input
+                  type="email"
+                  value={
+                    etudiantForm.email
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        email:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Téléphone
+
+                <input
+                  value={
+                    etudiantForm
+                      .telephone
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        telephone:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label className="checkbox-row">
+
+                <input
+                  type="checkbox"
+                  checked={
+                    etudiantForm.actif
+                  }
+                  onChange={
+                    (event) =>
+                      setEtudiantForm({
+                        ...etudiantForm,
+
+                        actif:
+                          event.target
+                            .checked,
+                      })
+                  }
+                />
+
+                Étudiant actif
+              </label>
+
+              <button
+                className="primary-button"
+                type="submit"
+              >
+                {
+                  editingEtudiantId
+                    ? 'Enregistrer'
+                    : 'Ajouter'
+                }
+              </button>
+
+            </form>
+
+          </article>
+
+        </section>
+      )}
+
+      {tab ===
+        'inscriptions' && (
+        <section className="crud-layout">
+
+          <article className="panel table-panel">
+
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Étudiant
+                  </th>
+
+                  <th>
+                    Classe
+                  </th>
+
+                  <th>
+                    Formation
+                  </th>
+
+                  <th>
+                    Année
+                  </th>
+
+                  <th>
+                    Statut
+                  </th>
+
+                  <th>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {
+                  filteredInscriptions
+                    .map(
+                      (item) => {
+                        const student =
+                          getEtudiant(
+                            item,
+                          );
+
+                        const classe =
+                          getClasse(
+                            item,
+                          );
+
+                        const formation =
+                          getFormation(
+                            item.classeId,
+                          );
+
+                        return (
+                          <tr
+                            key={
+                              item.id
+                            }
+                          >
+                            <td>
+                              <strong>
+                                {
+                                  student
+                                    ?.matricule ??
+                                  '-'
+                                }
+                              </strong>
+
+                              <small className="table-subtitle">
+                                {
+                                  student
+                                    ? `${student.prenom} ${student.nom}`
+                                    : '-'
+                                }
+                              </small>
+                            </td>
+
+                            <td>
+                              {
+                                classe
+                                  ? `${classe.code} — ${classe.nom}`
+                                  : '-'
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                formation
+                                  ?.nom ??
+                                '-'
+                              }
+                            </td>
+
+                            <td>
+                              {
+                                item.anneeAcademique
+                              }
+                            </td>
+
+                            <td>
+                              <InscriptionStatus
+                                statut={
+                                  item.statut
+                                }
+                              />
+                            </td>
+
+                            <td>
+                              <div className="action-buttons">
+
+                                {
+                                  student &&
+                                  (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        openParcours(
+                                          student.id,
+                                        )
+                                      }
+                                    >
+                                      Parcours
+                                    </button>
+                                  )
+                                }
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingInscriptionId(
+                                      item.id,
+                                    );
+
+                                    setInscriptionForm({
+                                      etudiantId:
+                                        String(
+                                          item.etudiantId,
+                                        ),
+
+                                      classeId:
+                                        String(
+                                          item.classeId,
+                                        ),
+
+                                      anneeAcademique:
+                                        item.anneeAcademique,
+
+                                      statut:
+                                        item.statut,
+                                    });
+                                  }}
+                                >
+                                  Modifier
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="danger-link"
+                                  onClick={() =>
+                                    void deleteInscription(
+                                      item.id,
+                                    )
+                                  }
+                                >
+                                  Supprimer
+                                </button>
+
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      },
+                    )
+                }
+              </tbody>
+            </table>
+
+          </article>
+
+          <article className="panel">
+
+            <div className="form-heading">
+              <h2>
+                {
+                  editingInscriptionId
+                    ? 'Modifier inscription'
+                    : 'Nouvelle inscription'
+                }
+              </h2>
+
+              {
+                editingInscriptionId &&
+                (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={
+                      resetInscriptionForm
+                    }
+                  >
+                    Annuler
+                  </button>
+                )
+              }
+            </div>
+
+            <form
+              className="form-grid"
+              onSubmit={
+                saveInscription
+              }
+            >
+
+              <label>
+                Étudiant
+
+                <select
+                  required
+                  disabled={
+                    !!editingInscriptionId
+                  }
+                  value={
+                    inscriptionForm
+                      .etudiantId
+                  }
+                  onChange={
+                    (event) =>
+                      setInscriptionForm({
+                        ...inscriptionForm,
+
+                        etudiantId:
+                          event.target
+                            .value,
+                      })
+                  }
+                >
+                  <option value="">
+                    Sélectionner
+                  </option>
+
+                  {
+                    etudiants
+                      .filter(
+                        (item) =>
+                          item.actif,
+                      )
+                      .map(
+                        (item) => (
+                          <option
+                            key={
+                              item.id
+                            }
+                            value={
+                              item.id
+                            }
+                          >
+                            {
+                              item.matricule
+                            } — {
+                              item.prenom
+                            } {
+                              item.nom
+                            }
+                          </option>
+                        ),
+                      )
+                  }
+                </select>
+              </label>
+
+              <label>
+                Classe
+
+                <select
+                  required
+                  value={
+                    inscriptionForm
+                      .classeId
+                  }
+                  onChange={
+                    (event) => {
+                      const value =
+                        event.target
+                          .value;
+
+                      const classe =
+                        classes.find(
+                          (item) =>
+                            item.id ===
+                            Number(
+                              value,
+                            ),
+                        );
+
+                      setInscriptionForm({
+                        ...inscriptionForm,
+
+                        classeId:
+                          value,
+
+                        anneeAcademique:
+                          classe?.annee ??
+                          inscriptionForm
+                            .anneeAcademique,
+                      });
+                    }
+                  }
+                >
+                  <option value="">
+                    Sélectionner
+                  </option>
+
+                  {
+                    classes
+                      .filter(
+                        (item) =>
+                          item.actif,
+                      )
+                      .map(
+                        (item) => (
+                          <option
+                            key={
+                              item.id
+                            }
+                            value={
+                              item.id
+                            }
+                          >
+                            {
+                              item.code
+                            } — {
+                              item.nom
+                            } ({
+                              item.annee
+                            })
+                          </option>
+                        ),
+                      )
+                  }
+                </select>
+              </label>
+
+              <label>
+                Année académique
+
+                <input
+                  required
+                  value={
+                    inscriptionForm
+                      .anneeAcademique
+                  }
+                  onChange={
+                    (event) =>
+                      setInscriptionForm({
+                        ...inscriptionForm,
+
+                        anneeAcademique:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Statut
+
+                <select
+                  value={
+                    inscriptionForm
+                      .statut
+                  }
+                  onChange={
+                    (event) =>
+                      setInscriptionForm({
+                        ...inscriptionForm,
+
+                        statut:
+                          event.target
+                            .value,
+                      })
+                  }
+                >
+                  <option value="ACTIVE">
+                    Active
+                  </option>
+
+                  <option value="SUSPENDUE">
+                    Suspendue
+                  </option>
+
+                  <option value="ABANDONNEE">
+                    Abandonnée
+                  </option>
+
+                  <option value="TERMINEE">
+                    Terminée
+                  </option>
+                </select>
+              </label>
+
+              <button
+                className="primary-button"
+                type="submit"
+              >
+                {
+                  editingInscriptionId
+                    ? 'Enregistrer'
+                    : 'Inscrire'
+                }
+              </button>
+
+            </form>
+
+          </article>
+
+        </section>
+      )}
+
+      {tab ===
+        'parcours' && (
+        <section className="page-stack">
+
+          {!selectedEtudiant && (
+            <section className="panel">
+              Sélectionnez d'abord un étudiant.
+            </section>
+          )}
+
+          {selectedEtudiant && (
+            <>
+              <section className="panel student-profile-card">
+
+                <div>
+                  <span className="eyebrow">
+                    Dossier étudiant
+                  </span>
+
+                  <h2>
+                    {
+                      selectedEtudiant.prenom
+                    } {
+                      selectedEtudiant.nom
+                    }
+                  </h2>
+
+                  <p>
+                    {
+                      selectedEtudiant.matricule
+                    }
+                  </p>
+                </div>
+
+                <div className="student-profile-actions">
+
+                  <button
+                    className="secondary-light-button"
+                    type="button"
+                    onClick={() => {
+                      setInscriptionForm({
+                        ...emptyInscription,
+
+                        etudiantId:
+                          String(
+                            selectedEtudiant.id,
+                          ),
+                      });
+
+                      setTab(
+                        'inscriptions',
+                      );
+                    }}
+                  >
+                    Nouvelle inscription
+                  </button>
+
+                  <button
+                    className="text-button"
+                    type="button"
+                    onClick={() => {
+                      setSelectedEtudiantId(
+                        null,
+                      );
+
+                      setTab(
+                        'etudiants',
+                      );
+                    }}
+                  >
+                    Fermer
+                  </button>
+
+                </div>
+
+              </section>
+
+              <section className="academic-timeline">
+
+                {
+                  selectedParcours.length ===
+                  0
+                    ? (
+                      <article className="panel">
+                        Aucun parcours académique enregistré.
+                      </article>
+                    )
+                    : selectedParcours.map(
+                        (item) => {
+                          const classe =
+                            getClasse(
+                              item,
+                            );
+
+                          const niveau =
+                            getNiveau(
+                              item.classeId,
+                            );
+
+                          const formation =
+                            getFormation(
+                              item.classeId,
+                            );
+
+                          return (
+                            <article
+                              className="timeline-card"
+                              key={
+                                item.id
+                              }
+                            >
+
+                              <div className="timeline-year">
+                                {
+                                  item.anneeAcademique
+                                }
+                              </div>
+
+                              <div className="timeline-content">
+
+                                <div className="timeline-heading">
+
+                                  <div>
+                                    <h3>
+                                      {
+                                        formation
+                                          ?.nom ??
+                                        'Formation'
+                                      }
+                                    </h3>
+
+                                    <p>
+                                      {
+                                        niveau
+                                          ?.nom ??
+                                        '-'
+                                      } · {
+                                        classe
+                                          ?.nom ??
+                                        '-'
+                                      }
+                                    </p>
+                                  </div>
+
+                                  <InscriptionStatus
+                                    statut={
+                                      item.statut
+                                    }
+                                  />
+
+                                </div>
+
+                                <div className="timeline-meta">
+
+                                  <span>
+                                    Classe : {
+                                      classe
+                                        ?.code ??
+                                      '-'
+                                    }
+                                  </span>
+
+                                  <span>
+                                    Niveau : {
+                                      niveau
+                                        ?.code ??
+                                      '-'
+                                    }
+                                  </span>
+
+                                  <span>
+                                    Formation : {
+                                      formation
+                                        ?.code ??
+                                      '-'
+                                    }
+                                  </span>
+
+                                </div>
+
+                              </div>
+
+                            </article>
+                          );
+                        },
+                      )
+                }
+
+              </section>
+            </>
+          )}
+
+        </section>
+      )}
+
+    </div>
+  );
+}
+
+function InscriptionStatus({
+  statut,
+}: {
+  statut: string;
+}) {
+  const normalized =
+    statut.toLowerCase();
+
+  return (
+    <span
+      className={
+        `status inscription-status ${normalized}`
+      }
+    >
+      {statut}
+    </span>
+  );
+}
+
+function formatDate(
+  value: string,
+) {
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
+    return value;
+  }
+
+  return date.toLocaleDateString(
+    'fr-FR',
+  );
+}

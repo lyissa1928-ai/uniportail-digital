@@ -1,0 +1,451 @@
+﻿import {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  api,
+} from '../lib/api';
+
+import {
+  useAuth,
+} from '../auth/auth-context';
+
+interface DashboardData {
+  anneeAcademique: string;
+
+  referentiel: {
+    formations: number;
+    classes: number;
+    cours: number;
+  };
+
+  population: {
+    etudiantsActifs: number;
+    enseignantsActifs: number;
+    inscriptions: number;
+  };
+
+  enseignements: {
+    affectations: number;
+    volumePrevuHeures: number;
+    heuresValidees: number;
+    tauxExecution: number;
+    coursNonDemarres: number;
+    coursTermines: number;
+    depassements: number;
+  };
+
+  seances: {
+    enAttente: number;
+    validees: number;
+    rejetees: number;
+    annulees: number;
+  };
+
+  eligibilite: {
+    dossiersTerminaux: number;
+    eligibles: number;
+    nonEligibles: number;
+  };
+
+  diplomes: {
+    totalDemandes: number;
+    parStatut: Record<string, number>;
+  };
+}
+
+export function DashboardPage() {
+  const {
+    user,
+  } = useAuth();
+
+  const [
+    data,
+    setData,
+  ] =
+    useState<DashboardData | null>(
+      null,
+    );
+
+  const [
+    loading,
+    setLoading,
+  ] =
+    useState(true);
+
+  const [
+    error,
+    setError,
+  ] =
+    useState('');
+
+  const canReport =
+    user?.permissions.includes(
+      'REPORTING_CONSULTER',
+    ) ?? false;
+
+  useEffect(
+    () => {
+      if (!canReport) {
+        setLoading(false);
+        return;
+      }
+
+      api<DashboardData>(
+        '/reporting/tableau-de-bord',
+      )
+        .then(setData)
+        .catch(() => {
+          setError(
+            'Impossible de charger les indicateurs.',
+          );
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    },
+    [
+      canReport,
+    ],
+  );
+
+  if (loading) {
+    return (
+      <div className="panel">
+        Chargement du tableau de bord...
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-stack">
+
+      <section className="page-header">
+        <div>
+          <span className="eyebrow">
+            Pilotage
+          </span>
+
+          <h1>
+            Tableau de bord
+          </h1>
+
+          <p>
+            Vue consolidée du suivi
+            académique et administratif.
+          </p>
+        </div>
+      </section>
+
+      {error && (
+        <div className="alert error">
+          {error}
+        </div>
+      )}
+
+      {!canReport && (
+        <section className="panel">
+          <h2>
+            Bienvenue
+          </h2>
+
+          <p>
+            {user?.nomAffichage ??
+              user?.email}
+          </p>
+
+          <p className="muted">
+            Votre tableau de bord
+            personnalisé sera alimenté
+            selon votre rôle.
+          </p>
+        </section>
+      )}
+
+      {data && (
+        <>
+          <section className="stat-grid">
+
+            <article className="stat-card">
+              <span>
+                Étudiants actifs
+              </span>
+
+              <strong>
+                {
+                  data.population
+                    .etudiantsActifs
+                }
+              </strong>
+            </article>
+
+            <article className="stat-card">
+              <span>
+                Enseignants actifs
+              </span>
+
+              <strong>
+                {
+                  data.population
+                    .enseignantsActifs
+                }
+              </strong>
+            </article>
+
+            <article className="stat-card">
+              <span>
+                Inscriptions
+              </span>
+
+              <strong>
+                {
+                  data.population
+                    .inscriptions
+                }
+              </strong>
+            </article>
+
+            <article className="stat-card">
+              <span>
+                Cours actifs
+              </span>
+
+              <strong>
+                {
+                  data.referentiel
+                    .cours
+                }
+              </strong>
+            </article>
+
+          </section>
+
+          <section className="dashboard-grid">
+
+            <article className="panel">
+              <h2>
+                Suivi des enseignements
+              </h2>
+
+              <div className="metric-list">
+
+                <div>
+                  <span>
+                    Affectations
+                  </span>
+
+                  <strong>
+                    {
+                      data.enseignements
+                        .affectations
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Volume prévu
+                  </span>
+
+                  <strong>
+                    {
+                      data.enseignements
+                        .volumePrevuHeures
+                    } h
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Heures validées
+                  </span>
+
+                  <strong>
+                    {
+                      data.enseignements
+                        .heuresValidees
+                    } h
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Taux d'exécution
+                  </span>
+
+                  <strong>
+                    {
+                      data.enseignements
+                        .tauxExecution
+                    } %
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="progress-track">
+                <div
+                  className="progress-value"
+                  style={{
+                    width:
+                      `${
+                        Math.min(
+                          data.enseignements
+                            .tauxExecution,
+                          100,
+                        )
+                      }%`,
+                  }}
+                />
+              </div>
+            </article>
+
+            <article className="panel">
+              <h2>
+                Séances
+              </h2>
+
+              <div className="metric-list">
+
+                <div>
+                  <span>
+                    À valider
+                  </span>
+                  <strong>
+                    {
+                      data.seances
+                        .enAttente
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Validées
+                  </span>
+                  <strong>
+                    {
+                      data.seances
+                        .validees
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Rejetées
+                  </span>
+                  <strong>
+                    {
+                      data.seances
+                        .rejetees
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Annulées
+                  </span>
+                  <strong>
+                    {
+                      data.seances
+                        .annulees
+                    }
+                  </strong>
+                </div>
+
+              </div>
+            </article>
+
+            <article className="panel">
+              <h2>
+                Éligibilité aux diplômes
+              </h2>
+
+              <div className="metric-list">
+
+                <div>
+                  <span>
+                    Dossiers terminaux
+                  </span>
+                  <strong>
+                    {
+                      data.eligibilite
+                        .dossiersTerminaux
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Éligibles
+                  </span>
+                  <strong>
+                    {
+                      data.eligibilite
+                        .eligibles
+                    }
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Non éligibles
+                  </span>
+                  <strong>
+                    {
+                      data.eligibilite
+                        .nonEligibles
+                    }
+                  </strong>
+                </div>
+
+              </div>
+            </article>
+
+            <article className="panel">
+              <h2>
+                Diplômes
+              </h2>
+
+              <div className="big-number">
+                {
+                  data.diplomes
+                    .totalDemandes
+                }
+              </div>
+
+              <p className="muted">
+                Demandes enregistrées
+              </p>
+
+              <div className="tag-list">
+                {
+                  Object.entries(
+                    data.diplomes
+                      .parStatut,
+                  ).map(
+                    ([
+                      statut,
+                      count,
+                    ]) => (
+                      <span
+                        className="tag"
+                        key={statut}
+                      >
+                        {statut} : {count}
+                      </span>
+                    ),
+                  )
+                }
+              </div>
+            </article>
+
+          </section>
+        </>
+      )}
+    </div>
+  );
+}

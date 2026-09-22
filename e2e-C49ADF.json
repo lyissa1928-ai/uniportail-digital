@@ -1,0 +1,62 @@
+﻿{
+    "suffix":  "C49ADF",
+    "resultats":  [
+                      {
+                          "etape":  "Backend disponible",
+                          "statut":  "OK",
+                          "detail":  "http://localhost:3001/api/health"
+                      },
+                      {
+                          "etape":  "Authentification SUPER_ADMIN",
+                          "statut":  "OK",
+                          "detail":  "issa.ly@ucad.edu.sn"
+                      },
+                      {
+                          "etape":  "Creation filiere",
+                          "statut":  "OK",
+                          "detail":  "POST /filieres"
+                      },
+                      {
+                          "etape":  "Creation formation",
+                          "statut":  "OK",
+                          "detail":  "POST /formations"
+                      },
+                      {
+                          "etape":  "Creation niveau terminal",
+                          "statut":  "OK",
+                          "detail":  "POST /niveaux"
+                      },
+                      {
+                          "etape":  "Creation classe",
+                          "statut":  "OK",
+                          "detail":  "POST /classes"
+                      },
+                      {
+                          "etape":  "Creation cours",
+                          "statut":  "FAIL",
+                          "detail":  "{\"statusCode\":400,\"error\":\"Bad Request\",\"message\":[\"semestre must not be greater than 2\"],\"timestamp\":\"2026-09-21T11:23:45.752Z\",\"method\":\"POST\",\"path\":\"/api/cours\",\"requestId\":\"7d5129c2-b583-406f-9660-403b2cedd681\"}"
+                      }
+                  ],
+    "anneeAcademique":  "2026-2027",
+    "date":  "2026-09-21T11:23:45.7975674+00:00",
+    "workflowComplet":  false,
+    "resume":  {
+                   "echecs":  1,
+                   "ok":  6,
+                   "warnings":  0
+               },
+    "ids":  {
+                "affectation":  null,
+                "inscription":  null,
+                "classe":  1,
+                "formation":  1,
+                "validationAcademique":  null,
+                "filiere":  1,
+                "demandeDiplome":  null,
+                "enseignant":  null,
+                "niveau":  1,
+                "etudiant":  null,
+                "cours":  null,
+                "seance":  null
+            }
+}
