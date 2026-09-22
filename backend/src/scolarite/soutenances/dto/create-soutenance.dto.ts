@@ -25,6 +25,30 @@ export class CreateSoutenanceDto {
   @IsDateString()
   dateSoutenance: string;
 
+  @IsString()
+  @IsOptional()
+  @MaxLength(5)
+  heureDebut?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(5)
+  heureFin?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  lieu?: string;
+
+  @IsIn([
+    'PLANIFIEE',
+    'TENUE',
+    'REPORTEE',
+    'ANNULEE',
+  ])
+  @IsOptional()
+  statut?: string;
+
   @IsIn([
     'EN_ATTENTE',
     'ADMIS',
@@ -39,6 +63,11 @@ export class CreateSoutenanceDto {
   @Max(20)
   @IsOptional()
   note?: number;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  mention?: string;
 
   @IsString()
   @IsOptional()
