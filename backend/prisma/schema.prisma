@@ -492,3 +492,18 @@ model Soutenance {
   @@index([validee])
   @@index([dateSoutenance])
 }
+
+
+model BrandingSettings {
+  id              Int      @id
+  appName         String   @default("UniPortail Digital")
+  appSubtitle     String   @default("Suivi & Évaluation Académique")
+  heroTitle       String   @default("Un suivi rigoureux pour une réussite durable")
+  heroDescription String   @default("UniPortail Digital centralise la gestion des enseignements, des évaluations, de la scolarité et des diplômes dans une interface unique, sécurisée et collaborative.")
+  quoteText       String   @default("L’enseignement est la clé qui ouvre les portes d’un avenir meilleur.")
+  logoUrl         String?
+  heroImageUrl    String?
+  updatedBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
