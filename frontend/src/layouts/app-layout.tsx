@@ -34,7 +34,8 @@ type NavigationIcon =
   | 'audit'
   | 'utilisateurs'
   | 'profil'
-  | 'notifications';
+  | 'notifications'
+  | 'branding';
 
 type NavigationGroup =
   | 'general'
@@ -186,6 +187,19 @@ const navigation:
 
     {
       label:
+        'Personnalisation',
+      path:
+        '/branding',
+      icon:
+        'branding',
+      group:
+        'administration',
+      permission:
+        'BRANDING_GERER',
+    },
+
+    {
+      label:
         'Notifications',
       path:
         '/notifications',
@@ -307,6 +321,15 @@ function NavIcon({
         <>
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
           <path d="M10 21h4" />
+        </>
+      ),
+
+      branding: (
+        <>
+          <path d="M12 3a9 9 0 1 0 9 9c0-1.1-.9-2-2-2h-1.5a2.5 2.5 0 0 1-2.5-2.5V6a3 3 0 0 0-3-3z" />
+          <circle cx="7.5" cy="10.5" r="1" />
+          <circle cx="10" cy="7.5" r="1" />
+          <circle cx="8.5" cy="15" r="1" />
         </>
       ),
     };
