@@ -331,6 +331,7 @@ model Utilisateur {
   roles         UtilisateurRole[]
   auditLogs     AuditLog[]
   notifications Notification[]
+  actualites      Actualite[]
 
   @@index([email])
   @@index([actif])
@@ -506,4 +507,34 @@ model BrandingSettings {
   updatedBy       String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+
+enum SourceActualite {
+  PEDAGOGIE
+  SCOLARITE
+  ADMINISTRATION
+}
+
+model Actualite {
+  id          Int             @id @default(autoincrement())
+  titre       String
+  resume      String
+  contenu     String?
+  imageUrl    String?
+  source      SourceActualite
+  publiee     Boolean         @default(true)
+  dateDebut   DateTime        @default(now())
+  dateFin     DateTime
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  auteurId Int
+  auteur   Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Restrict)
+
+  @@index([publiee])
+  @@index([dateDebut])
+  @@index([dateFin])
+  @@index([source])
+  @@index([auteurId])
 }
