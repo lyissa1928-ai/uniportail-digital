@@ -217,7 +217,7 @@ async function bootstrap() {
       3001,
     );
 
-  await app.listen(port);
+  await app.listen(port, '127.0.0.1');
 
   console.log(
     `API disponible sur http://localhost:${port}/api`,
