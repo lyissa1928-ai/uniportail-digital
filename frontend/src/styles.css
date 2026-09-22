@@ -16535,3 +16535,1336 @@ tbody tr:hover {
 /* ============================================================
    USERS FINAL POLISH END
    ============================================================ */
+
+
+/* ============================================================
+   APP SHELL V2 START
+   ============================================================ */
+
+.shell-v2 {
+  --shell-navy:
+    #08162b;
+
+  --shell-navy-soft:
+    #0e203d;
+
+  --shell-blue:
+    #1677ef;
+
+  --shell-border:
+    #dfe7f0;
+
+  grid-template-columns:
+    274px
+    minmax(0, 1fr);
+
+  background:
+    #f3f6fa;
+}
+
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.shell-v2 .sidebar-v2 {
+  z-index:
+    30;
+
+  min-height:
+    100vh;
+
+  height:
+    100vh;
+
+  padding:
+    18px
+    14px
+    14px;
+
+  overflow-y:
+    auto;
+
+  background:
+    linear-gradient(
+      180deg,
+      #0a1830 0%,
+      #09172c 52%,
+      #071326 100%
+    );
+
+  border-right:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .055
+    );
+
+  box-shadow:
+    8px
+    0
+    30px
+    rgba(
+      6,
+      22,
+      43,
+      .06
+    );
+}
+
+
+.shell-v2 .brand-v2 {
+  gap:
+    11px;
+
+  min-height:
+    64px;
+
+  padding:
+    5px
+    8px
+    13px;
+
+  border-bottom:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .07
+    );
+}
+
+
+.shell-v2 .brand-v2 .brand-mark {
+  width:
+    43px;
+
+  height:
+    43px;
+
+  flex:
+    0 0
+    43px;
+
+  border-radius:
+    13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #eef5ff
+    );
+
+  color:
+    #0a2a52;
+
+  font-size:
+    13px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -.04em;
+
+  box-shadow:
+    inset
+    0
+    0
+    0
+    1px
+    rgba(
+      16,
+      57,
+      102,
+      .05
+    ),
+    0
+    6px
+    18px
+    rgba(
+      0,
+      0,
+      0,
+      .14
+    );
+}
+
+
+.shell-v2 .brand-copy {
+  min-width:
+    0;
+}
+
+
+.shell-v2 .brand-copy strong {
+  overflow:
+    hidden;
+
+  color:
+    #ffffff;
+
+  font-size:
+    14px;
+
+  font-weight:
+    820;
+
+  line-height:
+    1.2;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.shell-v2 .brand-copy span {
+  margin-top:
+    4px;
+
+  color:
+    #8fa4be;
+
+  font-size:
+    10px;
+
+  font-weight:
+    650;
+
+  letter-spacing:
+    .025em;
+}
+
+
+.shell-v2 .sidebar-context {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    10px;
+
+  margin:
+    13px
+    4px
+    15px;
+
+  padding:
+    10px
+    11px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .075
+    );
+
+  border-radius:
+    10px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .035
+    );
+}
+
+
+.shell-v2 .sidebar-context-dot,
+.shell-v2 .topbar-status-dot {
+  width:
+    8px;
+
+  height:
+    8px;
+
+  flex:
+    0 0
+    8px;
+
+  border-radius:
+    50%;
+
+  background:
+    #26c281;
+
+  box-shadow:
+    0
+    0
+    0
+    4px
+    rgba(
+      38,
+      194,
+      129,
+      .12
+    );
+}
+
+
+.shell-v2 .sidebar-context small,
+.shell-v2 .sidebar-context strong {
+  display:
+    block;
+}
+
+
+.shell-v2 .sidebar-context small {
+  color:
+    #6f87a5;
+
+  font-size:
+    8px;
+
+  font-weight:
+    750;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .08em;
+}
+
+
+.shell-v2 .sidebar-context strong {
+  margin-top:
+    2px;
+
+  color:
+    #dbe8f6;
+
+  font-size:
+    10px;
+
+  font-weight:
+    750;
+}
+
+
+.shell-v2 .nav-caption {
+  margin:
+    0
+    11px
+    8px;
+
+  color:
+    #5f7694;
+
+  font-size:
+    8px;
+
+  font-weight:
+    850;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .12em;
+}
+
+
+.shell-v2 .navigation-v2 {
+  display:
+    grid;
+
+  gap:
+    3px;
+
+  padding:
+    0
+    2px;
+}
+
+
+.shell-v2 .navigation-v2 .nav-link {
+  position:
+    relative;
+
+  min-height:
+    42px;
+
+  display:
+    grid;
+
+  grid-template-columns:
+    32px
+    minmax(0, 1fr)
+    16px;
+
+  align-items:
+    center;
+
+  gap:
+    8px;
+
+  padding:
+    5px
+    9px
+    5px
+    7px;
+
+  overflow:
+    hidden;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius:
+    10px;
+
+  color:
+    #aebed1;
+
+  font-size:
+    11px;
+
+  font-weight:
+    650;
+
+  transition:
+    background-color
+    .16s
+    ease,
+    border-color
+    .16s
+    ease,
+    color
+    .16s
+    ease,
+    transform
+    .16s
+    ease;
+}
+
+
+.shell-v2 .navigation-v2 .nav-link::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    0;
+
+  top:
+    9px;
+
+  bottom:
+    9px;
+
+  width:
+    3px;
+
+  border-radius:
+    0
+    4px
+    4px
+    0;
+
+  background:
+    transparent;
+}
+
+
+.shell-v2 .navigation-v2 .nav-link:hover {
+  transform:
+    translateX(
+      1px
+    );
+
+  border-color:
+    rgba(
+      255,
+      255,
+      255,
+      .055
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .045
+    );
+
+  color:
+    #ffffff;
+}
+
+
+.shell-v2 .navigation-v2 .nav-link.active {
+  border-color:
+    rgba(
+      69,
+      149,
+      247,
+      .18
+    );
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(
+        30,
+        116,
+        223,
+        .22
+      ),
+      rgba(
+        30,
+        116,
+        223,
+        .08
+      )
+    );
+
+  color:
+    #ffffff;
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(
+      255,
+      255,
+      255,
+      .025
+    );
+}
+
+
+.shell-v2 .navigation-v2 .nav-link.active::before {
+  background:
+    #4da0ff;
+
+  box-shadow:
+    0
+    0
+    12px
+    rgba(
+      77,
+      160,
+      255,
+      .55
+    );
+}
+
+
+.shell-v2 .nav-icon {
+  width:
+    29px;
+
+  height:
+    29px;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  border-radius:
+    8px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .035
+    );
+
+  color:
+    #8198b5;
+}
+
+
+.shell-v2 .nav-link:hover .nav-icon {
+  color:
+    #b8d9ff;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .06
+    );
+}
+
+
+.shell-v2 .nav-link.active .nav-icon {
+  color:
+    #66adff;
+
+  background:
+    rgba(
+      72,
+      151,
+      246,
+      .12
+    );
+}
+
+
+.shell-v2 .nav-icon svg {
+  width:
+    16px;
+
+  height:
+    16px;
+}
+
+
+.shell-v2 .nav-label {
+  min-width:
+    0;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.shell-v2 .nav-chevron {
+  color:
+    #4f6683;
+
+  font-size:
+    17px;
+
+  line-height:
+    1;
+
+  text-align:
+    right;
+
+  transition:
+    transform
+    .16s
+    ease,
+    color
+    .16s
+    ease;
+}
+
+
+.shell-v2 .nav-link:hover .nav-chevron,
+.shell-v2 .nav-link.active .nav-chevron {
+  transform:
+    translateX(
+      1px
+    );
+
+  color:
+    #7db9ff;
+}
+
+
+/* ============================================================
+   SIDEBAR USER
+   ============================================================ */
+
+.shell-v2 .sidebar-footer-v2 {
+  margin-top:
+    auto;
+
+  padding:
+    12px
+    3px
+    0;
+
+  border-top:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .07
+    );
+}
+
+
+.shell-v2 .sidebar-user {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+
+  padding:
+    7px;
+}
+
+
+.shell-v2 .sidebar-avatar,
+.shell-v2 .topbar-avatar {
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  border-radius:
+    10px;
+
+  font-weight:
+    850;
+
+  letter-spacing:
+    -.025em;
+}
+
+
+.shell-v2 .sidebar-avatar {
+  width:
+    36px;
+
+  height:
+    36px;
+
+  flex:
+    0 0
+    36px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #e6f1ff,
+      #ffffff
+    );
+
+  color:
+    #135aa8;
+
+  font-size:
+    10px;
+}
+
+
+.shell-v2 .sidebar-user-copy {
+  min-width:
+    0;
+}
+
+
+.shell-v2 .sidebar-user-copy strong,
+.shell-v2 .sidebar-user-copy span {
+  display:
+    block;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.shell-v2 .sidebar-user-copy strong {
+  color:
+    #edf4fc;
+
+  font-size:
+    10px;
+
+  font-weight:
+    800;
+}
+
+
+.shell-v2 .sidebar-user-copy span {
+  margin-top:
+    3px;
+
+  color:
+    #7289a5;
+
+  font-size:
+    8px;
+
+  font-weight:
+    650;
+
+  text-transform:
+    capitalize;
+}
+
+
+.shell-v2 .sidebar-logout {
+  width:
+    100%;
+
+  min-height:
+    36px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  gap:
+    8px;
+
+  margin-top:
+    5px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .075
+    );
+
+  border-radius:
+    9px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .04
+    );
+
+  color:
+    #c1d0e1;
+
+  font-size:
+    9px;
+
+  font-weight:
+    750;
+
+  cursor:
+    pointer;
+
+  transition:
+    background
+    .15s
+    ease,
+    color
+    .15s
+    ease,
+    border-color
+    .15s
+    ease;
+}
+
+
+.shell-v2 .sidebar-logout:hover {
+  border-color:
+    rgba(
+      255,
+      255,
+      255,
+      .12
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .075
+    );
+
+  color:
+    #ffffff;
+}
+
+
+.shell-v2 .sidebar-logout svg {
+  width:
+    15px;
+
+  height:
+    15px;
+}
+
+
+/* ============================================================
+   TOP NAVIGATION
+   ============================================================ */
+
+.shell-v2 .workspace-v2 {
+  min-width:
+    0;
+
+  background:
+    #f3f6fa;
+}
+
+
+.shell-v2 .topbar-v2 {
+  position:
+    sticky;
+
+  top:
+    0;
+
+  z-index:
+    20;
+
+  min-height:
+    72px;
+
+  padding:
+    0
+    30px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .96
+    );
+
+  border-bottom:
+    1px solid
+    var(
+      --shell-border
+    );
+
+  box-shadow:
+    0
+    3px
+    14px
+    rgba(
+      15,
+      35,
+      58,
+      .025
+    );
+
+  backdrop-filter:
+    blur(
+      14px
+    );
+}
+
+
+.shell-v2 .topbar-page {
+  display:
+    grid;
+
+  gap:
+    2px;
+}
+
+
+.shell-v2 .topbar-page span {
+  color:
+    #7b8da3;
+
+  font-size:
+    8px;
+
+  font-weight:
+    800;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .11em;
+}
+
+
+.shell-v2 .topbar-page strong {
+  color:
+    #0b2340;
+
+  font-size:
+    15px;
+
+  font-weight:
+    820;
+
+  letter-spacing:
+    -.015em;
+}
+
+
+.shell-v2 .topbar-right {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    11px;
+}
+
+
+.shell-v2 .topbar-status {
+  min-height:
+    42px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+
+  padding:
+    7px
+    12px;
+
+  border:
+    1px solid
+    #e2e9f1;
+
+  border-radius:
+    11px;
+
+  background:
+    #fbfcfe;
+}
+
+
+.shell-v2 .topbar-status small,
+.shell-v2 .topbar-status strong {
+  display:
+    block;
+}
+
+
+.shell-v2 .topbar-status small {
+  color:
+    #8494a8;
+
+  font-size:
+    7px;
+
+  font-weight:
+    700;
+}
+
+
+.shell-v2 .topbar-status strong {
+  margin-top:
+    1px;
+
+  color:
+    #294766;
+
+  font-size:
+    9px;
+
+  font-weight:
+    760;
+}
+
+
+.shell-v2 .topbar-user {
+  min-width:
+    220px;
+
+  min-height:
+    46px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    10px;
+
+  padding:
+    5px
+    10px
+    5px
+    6px;
+
+  border:
+    1px solid
+    #dfe7f0;
+
+  border-radius:
+    12px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0
+    3px
+    10px
+    rgba(
+      24,
+      51,
+      80,
+      .035
+    );
+}
+
+
+.shell-v2 .topbar-avatar {
+  width:
+    34px;
+
+  height:
+    34px;
+
+  flex:
+    0 0
+    34px;
+
+  background:
+    #eaf3ff;
+
+  color:
+    #176bcb;
+
+  font-size:
+    9px;
+}
+
+
+.shell-v2 .topbar-user-copy {
+  min-width:
+    0;
+}
+
+
+.shell-v2 .topbar-user-copy strong,
+.shell-v2 .topbar-user-copy span {
+  display:
+    block;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.shell-v2 .topbar-user-copy strong {
+  color:
+    #193753;
+
+  font-size:
+    9px;
+
+  font-weight:
+    800;
+}
+
+
+.shell-v2 .topbar-user-copy span {
+  max-width:
+    180px;
+
+  margin-top:
+    2px;
+
+  color:
+    #8191a4;
+
+  font-size:
+    8px;
+}
+
+
+/* ============================================================
+   CONTENT ALIGNMENT
+   ============================================================ */
+
+.shell-v2 .content {
+  padding:
+    28px
+    30px
+    34px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (
+  max-width:
+    1100px
+) {
+  .shell-v2 {
+    grid-template-columns:
+      235px
+      minmax(0, 1fr);
+  }
+
+
+  .shell-v2 .topbar-status {
+    display:
+      none;
+  }
+
+
+  .shell-v2 .topbar-user {
+    min-width:
+      180px;
+  }
+}
+
+
+@media (
+  max-width:
+    760px
+) {
+  .shell-v2 {
+    display:
+      block;
+  }
+
+
+  .shell-v2 .sidebar-v2 {
+    position:
+      static;
+
+    width:
+      100%;
+
+    min-height:
+      auto;
+
+    height:
+      auto;
+
+    padding-bottom:
+      12px;
+  }
+
+
+  .shell-v2 .sidebar-context,
+  .shell-v2 .nav-caption {
+    display:
+      none;
+  }
+
+
+  .shell-v2 .navigation-v2 {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    margin-top:
+      10px;
+  }
+
+
+  .shell-v2 .sidebar-footer-v2 {
+    margin-top:
+      12px;
+  }
+
+
+  .shell-v2 .topbar-v2 {
+    min-height:
+      64px;
+
+    padding:
+      0
+      17px;
+  }
+
+
+  .shell-v2 .topbar-user {
+    min-width:
+      0;
+
+    border:
+      0;
+
+    padding:
+      0;
+
+    box-shadow:
+      none;
+  }
+
+
+  .shell-v2 .topbar-user-copy {
+    display:
+      none;
+  }
+
+
+  .shell-v2 .content {
+    padding:
+      20px
+      17px
+      28px;
+  }
+}
+
+
+@media (
+  max-width:
+    480px
+) {
+  .shell-v2 .navigation-v2 {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .shell-v2 .topbar-page strong {
+    font-size:
+      13px;
+  }
+}
+
+/* ============================================================
+   APP SHELL V2 END
+   ============================================================ */
