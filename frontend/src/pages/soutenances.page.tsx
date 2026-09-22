@@ -97,6 +97,31 @@ type Rapport = {
   parMention: Record<string, number>;
 };
 
+type RapportHebdomadaire = {
+  anneeAcademique: string;
+
+  periode: {
+    debut: string;
+    fin: string;
+  };
+
+  total: number;
+  planifiees: number;
+  terminees: number;
+  admis: number;
+  ajournes: number;
+  refuses: number;
+  tauxAdmission: number;
+  planning: Soutenance[];
+  resultats: Soutenance[];
+};
+
+type EnvoiRapportResponse = {
+  destinataires: number;
+  envoyes: number;
+  echecs: number;
+};
+
 const emptyForm = {
   inscriptionId: '',
   sujet: '',
@@ -144,9 +169,13 @@ const styles = `
 .sout-message{padding:10px 12px;border-radius:8px;font-size:9px}.sout-message.success{background:#eefaf3;color:#22744e}.sout-message.error{background:#fff0f2;color:#a23c47}
 .sout-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sout-report-card{padding:14px;border:1px solid #dfe8f2;border-radius:12px;background:#fff}
 .sout-report-card h3{margin:0 0 10px;color:#0c2548;font-size:13px}.sout-report-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #edf1f6;font-size:9px}.sout-report-row:last-child{border-bottom:0}
+.sout-weekly{grid-column:1/-1;padding:15px;border:1px solid #cfe1f5;border-radius:13px;background:linear-gradient(135deg,#f8fbff,#eef6ff)}
+.sout-weekly-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}.sout-weekly-head h3{margin:0 0 4px;color:#0b1d3a;font-size:15px}.sout-weekly-head p{margin:0;color:#72849a;font-size:9px}
+.sout-weekly-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}.sout-weekly-stat{padding:10px;border:1px solid #dce8f5;border-radius:9px;background:#fff}.sout-weekly-stat span{display:block;color:#75889f;font-size:7px;text-transform:uppercase}.sout-weekly-stat strong{display:block;margin-top:3px;color:#0c2548;font-size:17px}
+.sout-report-lists{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px}.sout-mini-list{padding:14px;border:1px solid #dfe8f2;border-radius:12px;background:#fff}.sout-mini-list h3{margin:0 0 9px;color:#0c2548;font-size:13px}.sout-mini-item{padding:8px 0;border-bottom:1px solid #edf1f6;font-size:9px;color:#35516e}.sout-mini-item:last-child{border-bottom:0}.sout-mini-item strong{display:block;color:#173653}.sout-mini-item small{display:block;margin-top:3px;color:#8291a4}
 .sout-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sout-filter input{height:34px;border:1px solid #d6e1ec;border-radius:7px;padding:0 10px;font-size:9px}
-@media(max-width:1050px){.sout-grid{grid-template-columns:1fr}.sout-kpis{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.sout-kpis,.sout-report-grid,.sout-form-row{grid-template-columns:1fr}.sout-hero{flex-direction:column}}
+@media(max-width:1050px){.sout-grid{grid-template-columns:1fr}.sout-kpis{grid-template-columns:repeat(2,1fr)}.sout-weekly-stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.sout-kpis,.sout-report-grid,.sout-form-row,.sout-report-lists,.sout-weekly-stats{grid-template-columns:1fr}.sout-hero{flex-direction:column}}
 `;
 
 function toArray<T>(
@@ -302,6 +331,14 @@ export function SoutenancesPage() {
     );
 
   const [
+    rapportHebdomadaire,
+    setRapportHebdomadaire,
+  ] =
+    useState<RapportHebdomadaire | null>(
+      null,
+    );
+
+  const [
     form,
     setForm,
   ] =
@@ -372,6 +409,10 @@ export function SoutenancesPage() {
               api<unknown>(
                 `/soutenances/rapport?annee=${encodeURIComponent(annee)}`,
               ),
+
+              api<unknown>(
+                `/soutenances/rapport-hebdomadaire?annee=${encodeURIComponent(annee)}`,
+              ),
             );
           }
 
@@ -419,6 +460,12 @@ export function SoutenancesPage() {
           setRapport(
             canReport
               ? result[6] as Rapport
+              : null,
+          );
+
+          setRapportHebdomadaire(
+            canReport
+              ? result[7] as RapportHebdomadaire
               : null,
           );
         }
@@ -776,6 +823,51 @@ export function SoutenancesPage() {
       behavior:
         'smooth',
     });
+  }
+
+  async function envoyerRapportHebdomadaire() {
+    if (!canReport) {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        'Envoyer le rapport hebdomadaire aux responsables pédagogiques, au directeur des études et au directeur ?',
+      )
+    ) {
+      return;
+    }
+
+    setBusy(true);
+    setError('');
+
+    try {
+      const result =
+        await api<EnvoiRapportResponse>(
+          `/soutenances/rapport-hebdomadaire/envoyer?annee=${encodeURIComponent(annee)}`,
+          {
+            method:
+              'POST',
+          },
+        );
+
+      notify(
+        `Rapport envoyé : ${result.envoyes}/${result.destinataires} destinataire(s)${result.echecs > 0 ? `, ${result.echecs} échec(s)` : ''}.`,
+      );
+
+      await load();
+    }
+    catch (currentError) {
+      setError(
+        currentError instanceof
+          ApiException
+          ? currentError.message
+          : 'Envoi du rapport impossible.',
+      );
+    }
+    finally {
+      setBusy(false);
+    }
   }
 
   async function validate(
@@ -1650,9 +1742,166 @@ export function SoutenancesPage() {
         canReport &&
         rapport && (
         <section className="sout-report-grid">
+          {rapportHebdomadaire && (
+            <>
+              <article className="sout-weekly">
+                <div className="sout-weekly-head">
+                  <div>
+                    <h3>
+                      Rapport hebdomadaire de direction
+                    </h3>
+
+                    <p>
+                      Semaine du {formatDate(rapportHebdomadaire.periode.debut)} au {formatDate(rapportHebdomadaire.periode.fin)} · Année académique {annee}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="sout-primary"
+                    disabled={busy}
+                    onClick={
+                      () =>
+                        void envoyerRapportHebdomadaire()
+                    }
+                  >
+                    {busy
+                      ? 'Envoi...'
+                      : 'Envoyer le rapport'}
+                  </button>
+                </div>
+
+                <div className="sout-weekly-stats">
+                  <div className="sout-weekly-stat">
+                    <span>Soutenances semaine</span>
+                    <strong>{rapportHebdomadaire.total}</strong>
+                  </div>
+
+                  <div className="sout-weekly-stat">
+                    <span>À réaliser</span>
+                    <strong>{rapportHebdomadaire.planifiees}</strong>
+                  </div>
+
+                  <div className="sout-weekly-stat">
+                    <span>Terminées</span>
+                    <strong>{rapportHebdomadaire.terminees}</strong>
+                  </div>
+
+                  <div className="sout-weekly-stat">
+                    <span>Admis</span>
+                    <strong>{rapportHebdomadaire.admis}</strong>
+                  </div>
+
+                  <div className="sout-weekly-stat">
+                    <span>Taux admission</span>
+                    <strong>{rapportHebdomadaire.tauxAdmission}%</strong>
+                  </div>
+                </div>
+              </article>
+
+              <section className="sout-report-lists">
+                <article className="sout-mini-list">
+                  <h3>
+                    Planning de la semaine
+                  </h3>
+
+                  {rapportHebdomadaire.planning.length === 0 ? (
+                    <div className="sout-mini-item">
+                      Aucune soutenance planifiée cette semaine.
+                    </div>
+                  ) : (
+                    rapportHebdomadaire.planning.map(
+                      (item) => {
+                        const inscription =
+                          item.inscription;
+
+                        const etudiant =
+                          inscription?.etudiant;
+
+                        const classe =
+                          getClasse(
+                            inscription,
+                          );
+
+                        const formation =
+                          getFormation(
+                            inscription,
+                          );
+
+                        return (
+                          <div
+                            className="sout-mini-item"
+                            key={item.id}
+                          >
+                            <strong>
+                              {formatDate(item.dateSoutenance)}
+                              {item.heureDebut
+                                ? ` · ${item.heureDebut}`
+                                : ''}
+                              {' — '}
+                              {etudiant
+                                ? `${etudiant.prenom} ${etudiant.nom}`
+                                : 'Étudiant'}
+                            </strong>
+
+                            <small>
+                              {formation?.nom ?? '—'} · {classe?.nom ?? '—'}
+                              {item.lieu
+                                ? ` · ${item.lieu}`
+                                : ''}
+                            </small>
+                          </div>
+                        );
+                      },
+                    )
+                  )}
+                </article>
+
+                <article className="sout-mini-list">
+                  <h3>
+                    Résultats de la semaine
+                  </h3>
+
+                  {rapportHebdomadaire.resultats.length === 0 ? (
+                    <div className="sout-mini-item">
+                      Aucun résultat enregistré cette semaine.
+                    </div>
+                  ) : (
+                    rapportHebdomadaire.resultats.map(
+                      (item) => {
+                        const etudiant =
+                          item.inscription
+                            ?.etudiant;
+
+                        return (
+                          <div
+                            className="sout-mini-item"
+                            key={item.id}
+                          >
+                            <strong>
+                              {etudiant
+                                ? `${etudiant.prenom} ${etudiant.nom}`
+                                : 'Étudiant'}
+                              {' — '}
+                              {decisionLabel(item.decision)}
+                            </strong>
+
+                            <small>
+                              Note : {item.note ?? '—'}/20 · Mention : {item.mention ?? '—'}
+                            </small>
+                          </div>
+                        );
+                      },
+                    )
+                  )}
+                </article>
+              </section>
+            </>
+          )}
+
           <article className="sout-report-card">
             <h3>
-              Synthèse
+              Synthèse annuelle
             </h3>
 
             <div className="sout-report-row">
