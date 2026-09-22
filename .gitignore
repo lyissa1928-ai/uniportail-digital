@@ -69,3 +69,5 @@ desktop.ini
 # ============================================================
 
 *.tsbuildinfo
+# Prisma migrations SQL
+!backend/prisma/migrations/**/migration.sql
