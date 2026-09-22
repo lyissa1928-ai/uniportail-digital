@@ -33,6 +33,7 @@ export class UtilisateursService {
     ['AUDIT_CONSULTER', 'Consulter le journal d audit'],
     ['UTILISATEURS_GERER', 'Gérer les utilisateurs'],
     ['BRANDING_GERER', 'Gérer l identité visuelle'],
+    ['ACTUALITES_GERER', 'Gérer les actualités publiques'],
   ] as const;
 
   private readonly rolePermissions:
@@ -53,6 +54,7 @@ export class UtilisateursService {
         'REPORTING_CONSULTER',
               'UTILISATEURS_GERER',
         'BRANDING_GERER',
+        'ACTUALITES_GERER',
       ],
 
       ETUDIANT: [
@@ -75,6 +77,7 @@ export class UtilisateursService {
         'ELIGIBILITE_CONSULTER',
         'ELIGIBILITE_GERER',
         'REPORTING_CONSULTER',
+        'ACTUALITES_GERER',
       ],
 
       QHSE: [
@@ -87,6 +90,7 @@ export class UtilisateursService {
         'PROFIL_LIRE',
         'SCOLARITE_GERER',
         'ELIGIBILITE_CONSULTER',
+        'ACTUALITES_GERER',
       ],
 
       DIPLOMES: [
