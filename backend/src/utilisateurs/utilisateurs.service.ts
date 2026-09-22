@@ -100,6 +100,26 @@ export class UtilisateursService {
         'ENSEIGNEMENTS_GERER',
         'REPORTING_CONSULTER',
       ],
+
+      DIRECTEUR_ETUDES: [
+        'PROFIL_LIRE',
+        'REFERENTIEL_CONSULTER',
+        'ENSEIGNEMENTS_CONSULTER',
+        'ENSEIGNEMENTS_GERER',
+        'SEANCES_VALIDER',
+        'ELIGIBILITE_CONSULTER',
+        'ELIGIBILITE_GERER',
+        'REPORTING_CONSULTER',
+      ],
+
+      DIRECTEUR: [
+        'PROFIL_LIRE',
+        'REFERENTIEL_CONSULTER',
+        'ENSEIGNEMENTS_CONSULTER',
+        'QHSE_CONSULTER',
+        'ELIGIBILITE_CONSULTER',
+        'REPORTING_CONSULTER',
+      ],
     };
 
   private readonly roleNames:
@@ -131,6 +151,12 @@ export class UtilisateursService {
 
       COORDONNATEUR:
         'Coordonnateur',
+
+      DIRECTEUR_ETUDES:
+        'Directeur des études',
+
+      DIRECTEUR:
+        'Directeur',
     };
 
   async initialiserReferentiel() {
