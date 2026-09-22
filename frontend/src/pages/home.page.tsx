@@ -41,18 +41,6 @@ type PublicActualite = {
   };
 };
 
-const DEFAULT_BRANDING: PublicBranding = {
-  appName: 'UniPortail Digital',
-  appSubtitle: 'Suivi & Évaluation Académique',
-  heroTitle: 'Un suivi rigoureux pour une réussite durable',
-  heroDescription:
-    'UniPortail Digital centralise la gestion des enseignements, des évaluations, de la scolarité et des diplômes dans une interface unique, sécurisée et collaborative.',
-  quoteText:
-    'L’éducation est la clé qui ouvre les portes d’un avenir meilleur.',
-  logoUrl: '/images/uniportail-logo.webp',
-  heroImageUrl: '/images/login-campus.webp',
-};
-
 type IconName =
   | 'graduate'
   | 'users'
@@ -66,12 +54,34 @@ type IconName =
   | 'arrow'
   | 'building'
   | 'teacher'
-  | 'settings';
+  | 'settings'
+  | 'book'
+  | 'layers'
+  | 'clock'
+  | 'sparkles';
+
+const DEFAULT_BRANDING: PublicBranding = {
+  appName:
+    'UniPortail Digital',
+  appSubtitle:
+    'Suivi & Évaluation Académique',
+  heroTitle:
+    'Un suivi rigoureux pour une réussite durable',
+  heroDescription:
+    'UniPortail Digital centralise la gestion des enseignements, des évaluations, de la scolarité et des diplômes dans une interface unique, sécurisée et collaborative.',
+  quoteText:
+    'L’éducation est la clé qui ouvre les portes d’un avenir meilleur.',
+  logoUrl:
+    '/images/uniportail-logo.webp',
+  heroImageUrl:
+    '/images/login-campus.webp',
+};
 
 function Icon({
   name,
 }: {
-  name: IconName;
+  name:
+    IconName;
 }) {
   const common = {
     viewBox:
@@ -189,6 +199,35 @@ function Icon({
           <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1v.1H9.6V21a1.7 1.7 0 0 0-.4-1 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 3.8 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1-.4H2.1V9.6h.1a1.7 1.7 0 0 0 1-.4 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.2 3.8a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1h4a1.7 1.7 0 0 0 .4 1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.2a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1 .4h.1v4h-.1a1.7 1.7 0 0 0-1 .4 1.7 1.7 0 0 0-.6 1z" />
         </>
       ),
+
+      book: (
+        <>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2z" />
+        </>
+      ),
+
+      layers: (
+        <>
+          <path d="m12 2 9 5-9 5-9-5z" />
+          <path d="m3 12 9 5 9-5" />
+          <path d="m3 17 9 5 9-5" />
+        </>
+      ),
+
+      clock: (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </>
+      ),
+
+      sparkles: (
+        <>
+          <path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2z" />
+          <path d="m18 14 .8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" />
+        </>
+      ),
     };
 
   return (
@@ -209,6 +248,7 @@ const moduleCards = [
     text:
       'Planification, enseignements, évaluations, soutenances',
   },
+
   {
     icon:
       'users' as const,
@@ -219,6 +259,7 @@ const moduleCards = [
     text:
       'Inscriptions, parcours, résultats, statistiques',
   },
+
   {
     icon:
       'file' as const,
@@ -229,6 +270,7 @@ const moduleCards = [
     text:
       'Éligibilité, génération et délivrance',
   },
+
   {
     icon:
       'chart' as const,
@@ -241,17 +283,97 @@ const moduleCards = [
   },
 ];
 
+const audiences = [
+  {
+    icon:
+      'users' as const,
+    tone:
+      'blue',
+    title:
+      'Étudiants',
+    text:
+      'Suivez votre parcours',
+  },
+
+  {
+    icon:
+      'teacher' as const,
+    tone:
+      'green',
+    title:
+      'Enseignants',
+    text:
+      'Gérez vos enseignements',
+  },
+
+  {
+    icon:
+      'settings' as const,
+    tone:
+      'purple',
+    title:
+      'Administratifs',
+    text:
+      'Simplifiez vos processus',
+  },
+
+  {
+    icon:
+      'building' as const,
+    tone:
+      'red',
+    title:
+      'Direction',
+    text:
+      'Pilotez avec des indicateurs',
+  },
+];
+
+const partners = [
+  {
+    sigle:
+      'UNI',
+    nom:
+      'Université partenaire',
+  },
+
+  {
+    sigle:
+      'ESP',
+    nom:
+      'École supérieure',
+  },
+
+  {
+    sigle:
+      'ISE',
+    nom:
+      'Institut supérieur',
+  },
+
+  {
+    sigle:
+      'CEF',
+    nom:
+      'Centre de formation',
+  },
+];
+
 function HeroTitle({
   value,
 }: {
-  value: string;
+  value:
+    string;
 }) {
-  if (
+  const normalized =
     value
       .trim()
       .toLocaleLowerCase(
         'fr-FR',
-      ) ===
+      );
+
+  if (
+    normalized ===
     'un suivi rigoureux pour une réussite durable'
   ) {
     return (
@@ -270,10 +392,7 @@ function HeroTitle({
     'réussite durable';
 
   const index =
-    value
-      .toLocaleLowerCase(
-        'fr-FR',
-      )
+    normalized
       .indexOf(
         marker,
       );
@@ -337,61 +456,19 @@ function actualiteDate(
       value,
     );
 
-  return date.toLocaleDateString(
-    'fr-FR',
-    {
-      day:
-        '2-digit',
-      month:
-        'short',
-      year:
-        'numeric',
-    },
-  );
+  return date
+    .toLocaleDateString(
+      'fr-FR',
+      {
+        day:
+          '2-digit',
+        month:
+          'short',
+        year:
+          'numeric',
+      },
+    );
 }
-
-const audiences = [
-  {
-    icon:
-      'users' as const,
-    tone:
-      'blue',
-    title:
-      'Étudiants',
-    text:
-      'Suivez votre parcours',
-  },
-  {
-    icon:
-      'teacher' as const,
-    tone:
-      'green',
-    title:
-      'Enseignants',
-    text:
-      'Gérez vos enseignements',
-  },
-  {
-    icon:
-      'settings' as const,
-    tone:
-      'purple',
-    title:
-      'Administratifs',
-    text:
-      'Simplifiez vos processus',
-  },
-  {
-    icon:
-      'building' as const,
-    tone:
-      'red',
-    title:
-      'Direction',
-    text:
-      'Pilotez avec des indicateurs',
-  },
-];
 
 export function HomePage() {
   const [
@@ -420,7 +497,9 @@ export function HomePage() {
       )
         .then(
           (result) => {
-            if (mounted) {
+            if (
+              mounted
+            ) {
               setBranding(
                 result,
               );
@@ -429,7 +508,9 @@ export function HomePage() {
         )
         .catch(
           () => {
-            if (mounted) {
+            if (
+              mounted
+            ) {
               setBranding(
                 DEFAULT_BRANDING,
               );
@@ -495,8 +576,12 @@ export function HomePage() {
           aria-label="Accueil UniPortail Digital"
         >
           <img
-            src={branding.logoUrl}
-            alt={branding.appName}
+            src={
+              branding.logoUrl
+            }
+            alt={
+              branding.appName
+            }
           />
         </Link>
 
@@ -538,14 +623,19 @@ export function HomePage() {
             className="public-search-button"
             aria-label="Rechercher"
           >
-            <Icon name="search" />
+            <Icon
+              name="search"
+            />
           </button>
 
           <Link
             to="/login"
             className="public-login-button"
           >
-            <Icon name="user" />
+            <Icon
+              name="user"
+            />
+
             <span>
               Se connecter
             </span>
@@ -581,7 +671,9 @@ export function HomePage() {
           </h1>
 
           <p>
-            {branding.heroDescription}
+            {
+              branding.heroDescription
+            }
           </p>
 
           <div className="public-hero-actions">
@@ -589,20 +681,26 @@ export function HomePage() {
               to="/login"
               className="public-primary-cta"
             >
-              <Icon name="graduate" />
+              <Icon
+                name="graduate"
+              />
 
               <span>
                 Accéder à mon espace
               </span>
 
-              <Icon name="arrow" />
+              <Icon
+                name="arrow"
+              />
             </Link>
 
             <a
               href="#fonctionnalites"
               className="public-secondary-cta"
             >
-              <Icon name="play" />
+              <Icon
+                name="play"
+              />
 
               <span>
                 Découvrir la plateforme
@@ -612,17 +710,23 @@ export function HomePage() {
 
           <div className="public-trust-row">
             <span>
-              <Icon name="shield" />
+              <Icon
+                name="shield"
+              />
               Données sécurisées
             </span>
 
             <span>
-              <Icon name="users" />
+              <Icon
+                name="users"
+              />
               Accessible à tous les acteurs
             </span>
 
             <span>
-              <Icon name="screen" />
+              <Icon
+                name="screen"
+              />
               Partout, à tout moment
             </span>
           </div>
@@ -634,7 +738,9 @@ export function HomePage() {
           </span>
 
           <p>
-            {branding.quoteText}
+            {
+              branding.quoteText
+            }
           </p>
         </blockquote>
       </section>
@@ -644,46 +750,55 @@ export function HomePage() {
         className="public-modules-wrap"
       >
         <div className="public-module-grid">
-          {moduleCards.map(
-            (item) => (
-              <article
-                className="public-module-card"
-                key={
-                  item.title
-                }
-              >
-                <span
-                  className={
-                    `public-module-icon ${item.tone}`
+          {
+            moduleCards.map(
+              (item) => (
+                <article
+                  className="public-module-card"
+                  key={
+                    item.title
                   }
                 >
-                  <Icon name={item.icon} />
-                </span>
+                  <span
+                    className={
+                      `public-module-icon ${item.tone}`
+                    }
+                  >
+                    <Icon
+                      name={
+                        item.icon
+                      }
+                    />
+                  </span>
 
-                <div>
-                  <h2>
-                    {item.title}
-                  </h2>
+                  <div>
+                    <h2>
+                      {
+                        item.title
+                      }
+                    </h2>
 
-                  <p>
-                    {item.text}
-                  </p>
+                    <p>
+                      {
+                        item.text
+                      }
+                    </p>
 
-                  <a href="#apropos">
-                    En savoir plus
-                    <span>
-                      →
-                    </span>
-                  </a>
-                </div>
-              </article>
-            ),
-          )}
+                    <a href="#apropos">
+                      En savoir plus
+                      <span>
+                        →
+                      </span>
+                    </a>
+                  </div>
+                </article>
+              ),
+            )
+          }
         </div>
       </section>
 
       <section
-        id="apropos"
         className="public-community"
       >
         <div className="public-community-copy">
@@ -705,134 +820,345 @@ export function HomePage() {
           </p>
         </div>
 
-        <div
-          id="etablissements"
-          className="public-audience-grid"
-        >
-          {audiences.map(
-            (item) => (
-              <article
-                className="public-audience"
-                key={
-                  item.title
-                }
-              >
-                <span
-                  className={
-                    `public-audience-icon ${item.tone}`
+        <div className="public-audience-grid">
+          {
+            audiences.map(
+              (item) => (
+                <article
+                  className="public-audience"
+                  key={
+                    item.title
                   }
                 >
-                  <Icon name={item.icon} />
-                </span>
+                  <span
+                    className={
+                      `public-audience-icon ${item.tone}`
+                    }
+                  >
+                    <Icon
+                      name={
+                        item.icon
+                      }
+                    />
+                  </span>
 
-                <strong>
-                  {item.title}
-                </strong>
+                  <strong>
+                    {
+                      item.title
+                    }
+                  </strong>
 
-                <p>
-                  {item.text}
-                </p>
-              </article>
-            ),
-          )}
+                  <p>
+                    {
+                      item.text
+                    }
+                  </p>
+                </article>
+              ),
+            )
+          }
         </div>
       </section>
 
-      {actualites.length > 0 && (
-        <section
-          id="actualites"
-          className="public-news"
+      <section
+        className="public-showcase"
+      >
+        <article
+          id="apropos"
+          className="public-about-card"
         >
-          <div className="public-news-heading">
-            <div>
-              <span className="public-section-kicker">
-                Informations récentes
-              </span>
+          <div className="public-about-copy">
+            <span className="public-card-accent" />
 
-              <h2>
-                Actualités
-              </h2>
+            <h2>
+              À propos de UniPortail Digital
+            </h2>
 
-              <p>
-                Les informations publiées par les services de la plateforme.
-              </p>
+            <p>
+              Une solution moderne et évolutive, conçue pour accompagner les établissements d’enseignement supérieur dans leur transformation digitale.
+            </p>
+
+            <a
+              href="#fonctionnalites"
+              className="public-about-button"
+            >
+              En savoir plus
+              <Icon
+                name="arrow"
+              />
+            </a>
+          </div>
+
+          <div className="public-about-visual">
+            <span className="public-about-badge">
+              <Icon
+                name="sparkles"
+              />
+
+              <strong>
+                Réussite
+                <br />
+                ensemble
+              </strong>
+            </span>
+
+            <span className="public-about-wave public-about-wave-one" />
+            <span className="public-about-wave public-about-wave-two" />
+
+            <div className="public-about-portrait">
+              <Icon
+                name="graduate"
+              />
             </div>
 
-            <span className="public-news-live">
-              Mise à jour en temps réel
+            <em>
+              Construire
+              <br />
+              l’avenir ensemble
+            </em>
+          </div>
+        </article>
+
+        <article
+          id="actualites"
+          className="public-news-panel"
+        >
+          <header className="public-panel-heading">
+            <h2>
+              Actualités
+            </h2>
+
+            <a href="#actualites">
+              Voir toutes
+              <span>
+                →
+              </span>
+            </a>
+          </header>
+
+          <div className="public-news-list">
+            {
+              actualites.length ===
+              0
+                ? (
+                  <div className="public-news-empty">
+                    <Icon
+                      name="clock"
+                    />
+
+                    <span>
+                      Aucune actualité en cours
+                    </span>
+                  </div>
+                )
+                : actualites.map(
+                    (item) => (
+                      <article
+                        className="public-news-row"
+                        key={
+                          item.id
+                        }
+                      >
+                        <div className="public-news-thumb">
+                          {
+                            item.imageUrl
+                              ? (
+                                <img
+                                  src={
+                                    item.imageUrl
+                                  }
+                                  alt=""
+                                />
+                              )
+                              : (
+                                <span>
+                                  <Icon
+                                    name="file"
+                                  />
+                                </span>
+                              )
+                          }
+                        </div>
+
+                        <div className="public-news-row-copy">
+                          <small>
+                            {
+                              actualiteDate(
+                                item.dateDebut,
+                              )
+                            }
+                          </small>
+
+                          <strong>
+                            {
+                              item.titre
+                            }
+                          </strong>
+
+                          <span>
+                            {
+                              actualiteSourceLabel(
+                                item.source,
+                              )
+                            }
+                          </span>
+                        </div>
+                      </article>
+                    ),
+                  )
+            }
+          </div>
+        </article>
+
+        <article
+          id="etablissements"
+          className="public-partners-panel"
+        >
+          <header className="public-panel-heading">
+            <h2>
+              Ils nous font confiance
+            </h2>
+          </header>
+
+          <div className="public-partners-grid">
+            {
+              partners.map(
+                (partner) => (
+                  <article
+                    className="public-partner-card"
+                    key={
+                      partner.sigle
+                    }
+                  >
+                    <span>
+                      {
+                        partner.sigle
+                      }
+                    </span>
+
+                    <div>
+                      <strong>
+                        {
+                          partner.sigle
+                        }
+                      </strong>
+
+                      <small>
+                        {
+                          partner.nom
+                        }
+                      </small>
+                    </div>
+                  </article>
+                ),
+              )
+            }
+          </div>
+
+          <div className="public-partner-dots">
+            <span>
+              ←
+            </span>
+
+            <i className="active" />
+            <i />
+            <i />
+            <i />
+
+            <span>
+              →
             </span>
           </div>
+        </article>
+      </section>
 
-          <div className="public-news-grid">
-            {actualites.map(
-              (item) => (
-                <article
-                  className="public-news-card"
-                  key={
-                    item.id
-                  }
-                >
-                  <div className="public-news-media">
-                    {item.imageUrl
-                      ? (
-                        <img
-                          src={
-                            item.imageUrl
-                          }
-                          alt=""
-                        />
-                      )
-                      : (
-                        <span className="public-news-placeholder">
-                          <Icon name="file" />
-                        </span>
-                      )}
+      <section className="public-metrics">
+        <article>
+          <span className="public-metric-icon">
+            <Icon
+              name="layers"
+            />
+          </span>
 
-                    <span className="public-news-source">
-                      {actualiteSourceLabel(
-                        item.source,
-                      )}
-                    </span>
-                  </div>
+          <div>
+            <strong>
+              7
+            </strong>
 
-                  <div className="public-news-body">
-                    <span className="public-news-date">
-                      {actualiteDate(
-                        item.dateDebut,
-                      )}
-                    </span>
-
-                    <h3>
-                      {item.titre}
-                    </h3>
-
-                    <p>
-                      {item.resume}
-                    </p>
-
-                    <div className="public-news-footer">
-                      <span>
-                        {item.auteur
-                          ?.nomAffichage ??
-                          actualiteSourceLabel(
-                            item.source,
-                          )}
-                      </span>
-
-                      <span>
-                        Visible jusqu’au{' '}
-                        {actualiteDate(
-                          item.dateFin,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ),
-            )}
+            <small>
+              Modules intégrés
+            </small>
           </div>
-        </section>
-      )}
+        </article>
+
+        <article>
+          <span className="public-metric-icon">
+            <Icon
+              name="users"
+            />
+          </span>
+
+          <div>
+            <strong>
+              Multi-profils
+            </strong>
+
+            <small>
+              Étudiants, enseignants et administration
+            </small>
+          </div>
+        </article>
+
+        <article>
+          <span className="public-metric-icon">
+            <Icon
+              name="chart"
+            />
+          </span>
+
+          <div>
+            <strong>
+              Centralisé
+            </strong>
+
+            <small>
+              Suivi, indicateurs et reporting
+            </small>
+          </div>
+        </article>
+
+        <article>
+          <span className="public-metric-icon">
+            <Icon
+              name="shield"
+            />
+          </span>
+
+          <div>
+            <strong>
+              Sécurisé
+            </strong>
+
+            <small>
+              Accès contrôlé par rôles
+            </small>
+          </div>
+        </article>
+
+        <div
+          className="public-metric-photo"
+          style={{
+            backgroundImage:
+              `url("${branding.heroImageUrl}")`,
+          }}
+        >
+          <span>
+            L’excellence académique
+            <br />
+            à portée de main
+          </span>
+        </div>
+      </section>
 
       <footer
         id="contact"
@@ -841,8 +1167,12 @@ export function HomePage() {
         <div className="public-footer-main">
           <div className="public-footer-brand">
             <img
-              src={branding.logoUrl}
-              alt={branding.appName}
+              src={
+                branding.logoUrl
+              }
+              alt={
+                branding.appName
+              }
             />
           </div>
 
@@ -897,7 +1227,9 @@ export function HomePage() {
 
         <div className="public-footer-bottom">
           <span>
-            © 2026 {branding.appName}. Tous droits réservés.
+            © 2026 {
+              branding.appName
+            }. Tous droits réservés.
           </span>
 
           <div>
