@@ -439,6 +439,62 @@ export class SoutenancesService {
       );
   }
 
+  async candidats(
+    anneeAcademique?: string,
+  ) {
+    return this.prisma
+      .inscriptionEtudiant
+      .findMany({
+        where: {
+          classe: {
+            niveau: {
+              terminal:
+                true,
+            },
+          },
+
+          ...(anneeAcademique
+            ? {
+                anneeAcademique,
+              }
+            : {}),
+
+          soutenance:
+            null,
+        },
+
+        orderBy: [
+          {
+            anneeAcademique:
+              'desc',
+          },
+
+          {
+            etudiant: {
+              nom:
+                'asc',
+            },
+          },
+        ],
+
+        include: {
+          etudiant:
+            true,
+
+          classe: {
+            include: {
+              niveau: {
+                include: {
+                  formation:
+                    true,
+                },
+              },
+            },
+          },
+        },
+      });
+  }
+
   async planning(
     anneeAcademique?: string,
   ) {
