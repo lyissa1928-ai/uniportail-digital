@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
   type FormEvent,
   type ReactNode,
@@ -11,12 +12,35 @@ import {
 } from 'react-router';
 
 import {
+  api,
   ApiException,
 } from '../lib/api';
 
 import {
   useAuth,
 } from '../auth/auth-context';
+
+type PublicBranding = {
+  appName: string;
+  appSubtitle: string;
+  heroTitle: string;
+  heroDescription: string;
+  quoteText: string;
+  logoUrl: string;
+  heroImageUrl: string;
+};
+
+const DEFAULT_BRANDING: PublicBranding = {
+  appName: 'UniPortail Digital',
+  appSubtitle: 'Suivi & Évaluation Académique',
+  heroTitle: 'Un suivi rigoureux pour une réussite durable',
+  heroDescription:
+    'UniPortail Digital centralise la gestion des enseignements, des évaluations, de la scolarité et des diplômes dans une interface unique, sécurisée et collaborative.',
+  quoteText:
+    'L’enseignement est la clé qui ouvre les portes d’un avenir meilleur.',
+  logoUrl: '/images/uniportail-logo.webp',
+  heroImageUrl: '/images/login-campus.webp',
+};
 
 function Icon({
   children,
@@ -50,6 +74,49 @@ export function LoginPage() {
 
   const location =
     useLocation();
+
+  const [
+    branding,
+    setBranding,
+  ] =
+    useState<PublicBranding>(
+      DEFAULT_BRANDING,
+    );
+
+  useEffect(
+    () => {
+      let mounted =
+        true;
+
+      void api<PublicBranding>(
+        '/branding/public',
+      )
+        .then(
+          (result) => {
+            if (mounted) {
+              setBranding(
+                result,
+              );
+            }
+          },
+        )
+        .catch(
+          () => {
+            if (mounted) {
+              setBranding(
+                DEFAULT_BRANDING,
+              );
+            }
+          },
+        );
+
+      return () => {
+        mounted =
+          false;
+      };
+    },
+    [],
+  );
 
   const [
     email,
@@ -146,25 +213,27 @@ export function LoginPage() {
   return (
     <main className="login-pro">
       <section className="login-pro-brand">
+        <div
+          className="login-pro-campus"
+          style={{
+            backgroundImage:
+              `url("${branding.heroImageUrl}")`,
+          }}
+        />
+
+        <div className="login-pro-campus-overlay" />
+
         <div className="login-pro-glow login-pro-glow-one" />
         <div className="login-pro-glow login-pro-glow-two" />
         <div className="login-pro-ring login-pro-ring-one" />
         <div className="login-pro-ring login-pro-ring-two" />
 
         <header className="login-pro-logo">
-          <div className="login-pro-logo-mark">
-            UP
-          </div>
-
-          <div>
-            <strong>
-              UniPortail Digital
-            </strong>
-
-            <span>
-              Plateforme académique
-            </span>
-          </div>
+          <img
+            className="login-pro-logo-image"
+            src={branding.logoUrl}
+            alt={branding.appName}
+          />
         </header>
 
         <div className="login-pro-brand-content">
@@ -175,22 +244,11 @@ export function LoginPage() {
           </div>
 
           <h1>
-            Pilotez les
-            <br />
-            enseignements,
-            <br />
-            la pédagogie et
-            <br />
-            <em>
-              les diplômes
-            </em>
+            {branding.heroTitle}
           </h1>
 
           <p className="login-pro-intro">
-            Une plateforme unique pour simplifier
-            la gestion académique, assurer le suivi
-            pédagogique, la scolarité et la délivrance
-            des diplômes, en toute sécurité.
+            {branding.heroDescription}
           </p>
 
           <div className="login-pro-feature-grid">
@@ -309,8 +367,8 @@ export function LoginPage() {
             </h2>
 
             <p>
-              Accédez à votre espace institutionnel
-              UniPortail Digital en toute sécurité.
+              Accédez à votre espace de travail
+              {branding.appName} en toute sécurité.
             </p>
           </div>
 
@@ -470,9 +528,13 @@ export function LoginPage() {
           </div>
         </div>
 
+        <div className="login-pro-public-quote">
+          « {branding.quoteText} »
+        </div>
+
         <footer className="login-pro-footer">
           <span>
-            © 2026 UniPortail Digital. Tous droits réservés.
+            © 2026 {branding.appName}. Tous droits réservés.
           </span>
 
           <div>
