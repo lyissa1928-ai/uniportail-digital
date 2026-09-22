@@ -51,8 +51,10 @@ import { SoutenancesModule } from './scolarite/soutenances/soutenances.module.js
 import { CompteModule } from './compte/compte.module.js';
 
 import { EspaceEtudiantModule } from './espace-etudiant/espace-etudiant.module.js';
+import { BrandingModule } from './branding/branding.module.js';
 @Module({
   imports: [
+    BrandingModule,
     EspaceEtudiantModule,
     CompteModule,
     SoutenancesModule,
