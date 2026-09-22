@@ -8,6 +8,8 @@ import {
 
 import { api } from '../lib/api';
 
+import { ActualitesManager } from '../components/actualites-manager';
+
 type Item = Record<string, any>;
 
 type Perimetre =
@@ -1447,6 +1449,8 @@ export function PedagogiePage() {
           </table>
         </div>
       </section>
+
+      <ActualitesManager />
 
       <footer className="ped-tip">
         <span>
