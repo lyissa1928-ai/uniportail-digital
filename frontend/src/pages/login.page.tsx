@@ -240,7 +240,7 @@ export function LoginPage() {
           <div className="login-pro-eyebrow">
             <span />
 
-            Au service d’une université plus connectée
+            Plateforme académique intégrée
           </div>
 
           <h1>
@@ -336,31 +336,24 @@ export function LoginPage() {
           </div>
 
           <div className="login-pro-mantra">
-            Enseigner
+            <span>✓</span>
+            Données sécurisées
             <span>·</span>
-            Accompagner
+            Accès par rôle
             <span>·</span>
-            Certifier
-            <span>·</span>
-            Bâtir demain
+            Accessible partout
           </div>
         </div>
       </section>
 
       <section className="login-pro-access">
         <div className="login-pro-language">
-          FR
+          <span>◎</span>
+          Français
           <span>⌄</span>
         </div>
 
         <div className="login-pro-card">
-          <div className="login-pro-lock">
-            <Icon>
-              <rect x="5" y="10" width="14" height="11" rx="2" />
-              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            </Icon>
-          </div>
-
           <div className="login-pro-title">
             <h2>
               Connexion
