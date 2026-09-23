@@ -538,3 +538,44 @@ model Actualite {
   @@index([source])
   @@index([auteurId])
 }
+
+
+enum TypeDemandeDiplomeExterne {
+  PREMIERE_DEMANDE
+  DUPLICATA
+}
+
+enum StatutDemandeDiplomeExterne {
+  DEMANDEE
+  EN_VERIFICATION
+  DISPONIBLE
+  REJETEE
+}
+
+model DemandeDiplomeExterne {
+  id                    Int                          @id @default(autoincrement())
+  reference             String                       @unique
+  email                 String
+  matricule             String?
+  nom                   String
+  prenom                String
+  dateNaissance         DateTime
+  anneeObtention        Int
+  intituleDiplome       String
+  typeDemande           TypeDemandeDiplomeExterne
+  statut                StatutDemandeDiplomeExterne @default(DEMANDEE)
+  motif                 String?
+  traiteePar            String?
+  dateValidation        DateTime?
+  dateDisponibilite     DateTime?
+  confirmationEnvoyeeLe DateTime?
+  disponibiliteEnvoyeeLe DateTime?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+
+  @@index([email])
+  @@index([matricule])
+  @@index([statut])
+  @@index([dateDisponibilite])
+  @@index([createdAt])
+}
