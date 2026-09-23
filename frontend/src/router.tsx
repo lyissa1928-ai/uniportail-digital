@@ -27,6 +27,14 @@ import {
 } from './pages/public-diploma.page';
 
 import {
+  PublicLegacyStudentPage,
+} from './pages/public-legacy-student.page';
+
+import {
+  LegacyStudentsAdminPage,
+} from './pages/legacy-students-admin.page';
+
+import {
   DashboardPage,
 } from './pages/dashboard.page';
 
@@ -98,6 +106,11 @@ export const router =
     {
       path: '/demande-diplome',
       element: <PublicDiplomaPage />,
+    },
+
+    {
+      path: '/ancien-etudiant',
+      element: <PublicLegacyStudentPage />,
     },
 
     {
@@ -189,6 +202,18 @@ export const router =
                   permission="SCOLARITE_GERER"
                 >
                   <ScolaritePage />
+                </RequireAccess>
+              ),
+            },
+
+            {
+              path: '/anciens-etudiants',
+
+              element: (
+                <RequireAccess
+                  permission="SCOLARITE_GERER"
+                >
+                  <LegacyStudentsAdminPage />
                 </RequireAccess>
               ),
             },
