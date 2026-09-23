@@ -714,18 +714,44 @@ export class DiplomesService {
       );
     }
 
-    await this
-      .creerDemandeEtudiant(
-        inscription.id,
-        etudiant.id,
+    const demande =
+      await this
+        .creerDemandeEtudiant(
+          inscription.id,
+          etudiant.id,
+        );
+
+    const emailEnvoye =
+      await this.sendMail(
+        dto.email
+          .trim()
+          .toLowerCase(),
+        'Confirmation de votre demande de diplôme',
+        'Bonjour ' +
+          etudiant.prenom +
+          ' ' +
+          etudiant.nom +
+          ',\n\n' +
+          'Votre demande de diplôme a bien été enregistrée sur UniPortail Digital.\n\n' +
+          'Référence interne : #' +
+          demande.id +
+          '\n\n' +
+          'Vous recevrez un nouvel e-mail lorsque votre diplôme sera disponible.\n\n' +
+          'UniPortail Digital',
       );
 
-    return this.verifierPublic({
-      matricule:
-        dto.matricule,
-      email:
-        dto.email,
-    });
+    const suivi =
+      await this.verifierPublic({
+        matricule:
+          dto.matricule,
+        email:
+          dto.email,
+      });
+
+    return {
+      ...suivi,
+      emailEnvoye,
+    };
   }
 
   async creerDemandeExterne(
@@ -1653,6 +1679,34 @@ export class DiplomesService {
             },
           }),
       ]);
+
+    const email =
+      demande.inscription
+        .etudiant
+        .email;
+
+    if (email) {
+      await this.sendMail(
+        email,
+        'Votre diplôme est disponible',
+        'Bonjour ' +
+          demande.inscription
+            .etudiant
+            .prenom +
+          ' ' +
+          demande.inscription
+            .etudiant
+            .nom +
+          ',\n\n' +
+          'Votre diplôme est désormais disponible auprès du service compétent.\n\n' +
+          'Numéro : ' +
+          demande.diplome
+            .numero +
+          '\n\n' +
+          'Merci de vous présenter avec une pièce d’identité.\n\n' +
+          'UniPortail Digital',
+      );
+    }
 
     return this.getDemande(id);
   }
