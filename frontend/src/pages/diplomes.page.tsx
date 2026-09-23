@@ -1092,6 +1092,18 @@ export function DiplomesPage() {
                 }
               </strong>
             </article>
+
+            <article className="stat-card">
+              <span>
+                Demandes externes
+              </span>
+
+              <strong>
+                {
+                  demandesExternes.length
+                }
+              </strong>
+            </article>
           </>
         )}
 
@@ -1177,6 +1189,25 @@ export function DiplomesPage() {
                 type="button"
                 className={
                   tab ===
+                    'externes'
+                    ? 'tab active'
+                    : 'tab'
+                }
+                onClick={() =>
+                  setTab(
+                    'externes',
+                  )
+                }
+              >
+                Demandes publiques
+              </button>
+            )}
+
+            {canDiplomasManage && (
+              <button
+                type="button"
+                className={
+                  tab ===
                     'registre'
                     ? 'tab active'
                     : 'tab'
@@ -1215,6 +1246,8 @@ export function DiplomesPage() {
 
           {(tab ===
               'demandes' ||
+            tab ===
+              'externes' ||
             tab ===
               'registre') && (
             <input
@@ -1278,6 +1311,19 @@ export function DiplomesPage() {
           }
           transition={
             transition
+          }
+        />
+      )}
+
+      {tab ===
+        'externes' &&
+        canDiplomasManage && (
+        <ExternalRequestsView
+          demandes={
+            filteredDemandesExternes
+          }
+          transition={
+            transitionExterne
           }
         />
       )}
@@ -2189,6 +2235,257 @@ function WorkflowActions({
         </span>
       );
   }
+}
+
+function ExternalRequestsView({
+  demandes,
+  transition,
+}: {
+  demandes:
+    DemandeDiplomeExterne[];
+
+  transition:
+    (
+      demande:
+        DemandeDiplomeExterne,
+
+      action:
+        'verifier' |
+        'valider' |
+        'rejeter' |
+        'renvoyer-disponibilite',
+    ) => Promise<void>;
+}) {
+  return (
+    <section className="panel table-panel">
+      <div className="section-title-row">
+        <div>
+          <h2>
+            Demandes publiques
+          </h2>
+
+          <p className="muted">
+            Demandes déposées lorsque le matricule et l’adresse e-mail ne correspondent à aucun dossier interne.
+          </p>
+        </div>
+
+        <span className="counter-badge">
+          {demandes.length}
+        </span>
+      </div>
+
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                Référence
+              </th>
+
+              <th>
+                Demandeur
+              </th>
+
+              <th>
+                Diplôme
+              </th>
+
+              <th>
+                Type
+              </th>
+
+              <th>
+                Statut
+              </th>
+
+              <th>
+                E-mails
+              </th>
+
+              <th>
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {demandes.length ===
+            0 ? (
+              <tr>
+                <td colSpan={7}>
+                  Aucune demande publique.
+                </td>
+              </tr>
+            ) : (
+              demandes.map(
+                (item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <strong>
+                        {item.reference}
+                      </strong>
+
+                      <small className="table-subtitle">
+                        {formatDate(
+                          item.createdAt,
+                        )}
+                      </small>
+                    </td>
+
+                    <td>
+                      <strong>
+                        {item.prenom} {item.nom}
+                      </strong>
+
+                      <small className="table-subtitle">
+                        {item.email}
+                      </small>
+
+                      <small className="table-subtitle">
+                        Matricule : {item.matricule ?? 'non renseigné'}
+                      </small>
+
+                      <small className="table-subtitle">
+                        Né(e) le {formatDate(
+                          item.dateNaissance,
+                        )}
+                      </small>
+                    </td>
+
+                    <td>
+                      {item.intituleDiplome}
+
+                      <small className="table-subtitle">
+                        Année : {item.anneeObtention}
+                      </small>
+                    </td>
+
+                    <td>
+                      {item.typeDemande ===
+                      'DUPLICATA'
+                        ? 'Duplicata'
+                        : 'Diplôme'}
+                    </td>
+
+                    <td>
+                      <DiplomaStatus
+                        value={
+                          item.statut
+                        }
+                      />
+
+                      {item.motif && (
+                        <small className="table-subtitle">
+                          {item.motif}
+                        </small>
+                      )}
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          item.confirmationEnvoyeeLe
+                            ? 'status active'
+                            : 'status inactive'
+                        }
+                      >
+                        Réception {
+                          item.confirmationEnvoyeeLe
+                            ? 'envoyée'
+                            : 'non envoyée'
+                        }
+                      </span>
+
+                      <small className="table-subtitle">
+                        Disponibilité : {
+                          item.disponibiliteEnvoyeeLe
+                            ? 'envoyée'
+                            : 'non envoyée'
+                        }
+                      </small>
+                    </td>
+
+                    <td>
+                      <div className="action-buttons">
+                        {item.statut ===
+                        'DEMANDEE' && (
+                          <button
+                            type="button"
+                            onClick={
+                              () =>
+                                void transition(
+                                  item,
+                                  'verifier',
+                                )
+                            }
+                          >
+                            Vérifier
+                          </button>
+                        )}
+
+                        {[
+                          'DEMANDEE',
+                          'EN_VERIFICATION',
+                        ].includes(
+                          item.statut,
+                        ) && (
+                          <>
+                            <button
+                              type="button"
+                              className="approve-button compact"
+                              onClick={
+                                () =>
+                                  void transition(
+                                    item,
+                                    'valider',
+                                  )
+                              }
+                            >
+                              Valider & disponible
+                            </button>
+
+                            <button
+                              type="button"
+                              className="reject-button compact"
+                              onClick={
+                                () =>
+                                  void transition(
+                                    item,
+                                    'rejeter',
+                                  )
+                              }
+                            >
+                              Rejeter
+                            </button>
+                          </>
+                        )}
+
+                        {item.statut ===
+                        'DISPONIBLE' && (
+                          <button
+                            type="button"
+                            onClick={
+                              () =>
+                                void transition(
+                                  item,
+                                  'renvoyer-disponibilite',
+                                )
+                            }
+                          >
+                            Renvoyer l’e-mail
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ),
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
 }
 
 function RegistreView({
