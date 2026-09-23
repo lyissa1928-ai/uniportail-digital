@@ -14,6 +14,7 @@ import {
   clearToken,
   getToken,
   setToken,
+  TOKEN_KEY,
 } from '../lib/api';
 
 import type {
@@ -114,7 +115,7 @@ const ACTIVITY_THROTTLE_MS =
 
 function readStamp() {
   const raw =
-    sessionStorage.getItem(
+    localStorage.getItem(
       SESSION_STAMP_KEY,
     );
 
@@ -132,14 +133,14 @@ function writeStamp(
   stamp:
     number,
 ) {
-  sessionStorage.setItem(
+  localStorage.setItem(
     SESSION_STAMP_KEY,
     String(stamp),
   );
 }
 
 function clearStamp() {
-  sessionStorage.removeItem(
+  localStorage.removeItem(
     SESSION_STAMP_KEY,
   );
 }
@@ -510,6 +511,63 @@ export function AuthProvider({
           channelRef.current =
             null;
         }
+      };
+    },
+    [
+      refreshUser,
+    ],
+  );
+
+  useEffect(
+    () => {
+      const storageHandler =
+        (
+          event:
+            StorageEvent,
+        ) => {
+          if (
+            event.key !==
+              TOKEN_KEY &&
+            event.key !==
+              SESSION_STAMP_KEY
+          ) {
+            return;
+          }
+
+          if (
+            getToken()
+          ) {
+            setLoading(
+              true,
+            );
+
+            setLogoutReason(
+              null,
+            );
+
+            void refreshUser();
+          }
+          else {
+            setUser(
+              null,
+            );
+
+            setLoading(
+              false,
+            );
+          }
+        };
+
+      window.addEventListener(
+        'storage',
+        storageHandler,
+      );
+
+      return () => {
+        window.removeEventListener(
+          'storage',
+          storageHandler,
+        );
       };
     },
     [
