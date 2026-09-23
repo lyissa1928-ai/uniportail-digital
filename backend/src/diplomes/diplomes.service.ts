@@ -823,8 +823,7 @@ export class DiplomesService {
 
     if (existante) {
       throw new ConflictException(
-        'Une demande identique est déjà enregistrée sous la référence ' +
-        existante.reference,
+        'Une demande identique est déjà enregistrée. Consultez votre e-mail de confirmation pour retrouver sa référence.',
       );
     }
 
