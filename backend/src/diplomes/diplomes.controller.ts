@@ -20,6 +20,9 @@ import { MotifDiplomeDto } from './dto/motif-diplome.dto.js';
 import { RetraitDiplomeDto } from './dto/retrait-diplome.dto.js';
 import { PublicDiplomeLookupDto } from './dto/public-diplome-lookup.dto.js';
 import { PublicDiplomeRequestDto } from './dto/public-diplome-request.dto.js';
+import { PublicExternalDiplomaRequestDto } from './dto/public-external-diploma-request.dto.js';
+import { PublicExternalDiplomaTrackDto } from './dto/public-external-diploma-track.dto.js';
+import { RejectExternalDiplomaRequestDto } from './dto/reject-external-diploma-request.dto.js';
 
 @Controller('diplomes')
 export class DiplomesController {
@@ -56,6 +59,32 @@ export class DiplomesController {
   ) {
     return this.service
       .demanderPublic(
+        dto,
+      );
+  }
+
+  @Public()
+  @Post('public/demander-externe')
+  demanderDiplomeExterne(
+    @Body()
+    dto:
+      PublicExternalDiplomaRequestDto,
+  ) {
+    return this.service
+      .creerDemandeExterne(
+        dto,
+      );
+  }
+
+  @Public()
+  @Post('public/suivre-externe')
+  suivreDiplomeExterne(
+    @Body()
+    dto:
+      PublicExternalDiplomaTrackDto,
+  ) {
+    return this.service
+      .suivreDemandeExterne(
         dto,
       );
   }
@@ -119,6 +148,100 @@ export class DiplomesController {
    * SERVICE DIPLOMES
    * ========================================================
    */
+
+  @Permissions('DIPLOMES_GERER')
+  @Get('demandes-externes')
+  demandesExternes() {
+    return this.service
+      .demandesExternes();
+  }
+
+  @Permissions('DIPLOMES_GERER')
+  @Patch('demandes-externes/:id/verifier')
+  verifierDemandeExterne(
+    @Param(
+      'id',
+      ParseIntPipe,
+    )
+    id:
+      number,
+
+    @Req()
+    request:
+      any,
+  ) {
+    return this.service
+      .verifierDemandeExterne(
+        id,
+        request.user
+          ?.email,
+      );
+  }
+
+  @Permissions('DIPLOMES_GERER')
+  @Patch('demandes-externes/:id/valider')
+  validerDemandeExterne(
+    @Param(
+      'id',
+      ParseIntPipe,
+    )
+    id:
+      number,
+
+    @Req()
+    request:
+      any,
+  ) {
+    return this.service
+      .validerDemandeExterne(
+        id,
+        request.user
+          ?.email,
+      );
+  }
+
+  @Permissions('DIPLOMES_GERER')
+  @Patch('demandes-externes/:id/rejeter')
+  rejeterDemandeExterne(
+    @Param(
+      'id',
+      ParseIntPipe,
+    )
+    id:
+      number,
+
+    @Body()
+    dto:
+      RejectExternalDiplomaRequestDto,
+
+    @Req()
+    request:
+      any,
+  ) {
+    return this.service
+      .rejeterDemandeExterne(
+        id,
+        dto.motif,
+        request.user
+          ?.email,
+      );
+  }
+
+  @Permissions('DIPLOMES_GERER')
+  @Post('demandes-externes/:id/renvoyer-disponibilite')
+  renvoyerDisponibiliteExterne(
+    @Param(
+      'id',
+      ParseIntPipe,
+    )
+    id:
+      number,
+  ) {
+    return this.service
+      .renvoyerDisponibiliteExterne(
+        id,
+      );
+  }
 
   @Permissions('DIPLOMES_GERER')
   @Post('demandes')
