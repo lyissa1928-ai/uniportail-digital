@@ -6,25 +6,58 @@ const API_URL =
   import.meta.env.VITE_API_URL ??
   'http://localhost:3001/api';
 
-const TOKEN_KEY =
+export const TOKEN_KEY =
   'suivi_evaluation_access_token';
 
 export function getToken() {
-  return sessionStorage.getItem(
-    TOKEN_KEY,
-  );
+  const shared =
+    localStorage.getItem(
+      TOKEN_KEY,
+    );
+
+  if (shared) {
+    return shared;
+  }
+
+  const legacy =
+    sessionStorage.getItem(
+      TOKEN_KEY,
+    );
+
+  if (legacy) {
+    localStorage.setItem(
+      TOKEN_KEY,
+      legacy,
+    );
+
+    sessionStorage.removeItem(
+      TOKEN_KEY,
+    );
+
+    return legacy;
+  }
+
+  return null;
 }
 
 export function setToken(
   token: string,
 ) {
-  sessionStorage.setItem(
+  localStorage.setItem(
     TOKEN_KEY,
     token,
+  );
+
+  sessionStorage.removeItem(
+    TOKEN_KEY,
   );
 }
 
 export function clearToken() {
+  localStorage.removeItem(
+    TOKEN_KEY,
+  );
+
   sessionStorage.removeItem(
     TOKEN_KEY,
   );
