@@ -51,6 +51,12 @@ export class DiplomesController {
   }
 
   @Public()
+  @Throttle({
+    default: {
+      limit: 5,
+      ttl: 60000,
+    },
+  })
   @Post('public/demander')
   demanderDiplomePublic(
     @Body()
@@ -64,6 +70,12 @@ export class DiplomesController {
   }
 
   @Public()
+  @Throttle({
+    default: {
+      limit: 5,
+      ttl: 60000,
+    },
+  })
   @Post('public/demander-externe')
   demanderDiplomeExterne(
     @Body()
@@ -77,6 +89,12 @@ export class DiplomesController {
   }
 
   @Public()
+  @Throttle({
+    default: {
+      limit: 20,
+      ttl: 60000,
+    },
+  })
   @Post('public/suivre-externe')
   suivreDiplomeExterne(
     @Body()
