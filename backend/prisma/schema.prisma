@@ -175,21 +175,170 @@ enum StatutInscription {
   TERMINEE
 }
 
+enum OrigineDossierEtudiant {
+  SYSTEME
+  IMPORT
+  ARCHIVE
+  RECONSTITUTION
+}
+
+enum StatutVerificationEtudiant {
+  NON_VERIFIE
+  EN_VERIFICATION
+  VERIFIE
+  REJETE
+}
+
+enum StatutDemandeAncienEtudiant {
+  SOUMISE
+  EN_VERIFICATION
+  COMPLEMENT_REQUIS
+  VALIDEE
+  REJETEE
+}
+
+enum ObjetDemandeAncienEtudiant {
+  RECONSTITUTION_DOSSIER
+  INTEGRATION_PARCOURS
+  DEMANDE_DIPLOME
+  ATTESTATION_REUSSITE
+  RELEVE_NOTES
+  CORRECTION_DONNEES
+  AUTRE
+}
+
+enum TypePieceAncienEtudiant {
+  IDENTITE
+  JUSTIFICATIF_ACADEMIQUE
+}
+
 model Etudiant {
   id            Int       @id @default(autoincrement())
   matricule     String    @unique
   nom           String
   prenom        String
-  dateNaissance DateTime?
-  email         String?   @unique
-  telephone     String?
-  actif         Boolean   @default(true)
+  dateNaissance      DateTime?
+  lieuNaissance       String?
+  email               String?   @unique
+  telephone           String?
+  origineDossier      OrigineDossierEtudiant      @default(SYSTEME)
+  statutVerification  StatutVerificationEtudiant  @default(VERIFIE)
+  actif               Boolean   @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inscriptions InscriptionEtudiant[]
-  utilisateur  Utilisateur?
+  inscriptions           InscriptionEtudiant[]
+  utilisateur            Utilisateur?
+  demandesReconstitution DemandeAncienEtudiant[]
+  parcoursHistoriques    ParcoursAcademiqueHistorique[]
+}
+
+model DemandeAncienEtudiant {
+  id                       Int                         @id @default(autoincrement())
+  reference                String                      @unique
+  email                    String
+  telephone                String
+  nom                      String
+  prenom                   String
+  dateNaissance            DateTime
+  lieuNaissance            String
+  matriculeDeclare         String?
+  etablissementLibelle     String
+  departementLibelle       String?
+  filiereLibelle           String
+  niveauGrade              String
+  anneeEntree              Int
+  anneeSortie              Int?
+  derniereAnneeAcademique  String
+  diplomePrepare           String
+  diplomeObtenu            Boolean                     @default(false)
+  anneeObtention           Int?
+  mention                  String?
+  dejaSoutenu              Boolean                     @default(false)
+  dateSoutenance           DateTime?
+  sujetSoutenance          String?
+  directeurMemoire         String?
+  presidentJury            String?
+  numeroPv                 String?
+  attestationReussite      Boolean                     @default(false)
+  objetDemande             ObjetDemandeAncienEtudiant
+  detailsDemande           String?
+  statut                   StatutDemandeAncienEtudiant @default(SOUMISE)
+  motifTraitement          String?
+  traiteePar               String?
+  matriculeVerifie         String?
+  dateVerification         DateTime?
+  dateDecision             DateTime?
+  confirmationEnvoyeeLe    DateTime?
+  decisionEnvoyeeLe        DateTime?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+
+  etudiantId Int?
+  etudiant   Etudiant? @relation(fields: [etudiantId], references: [id], onDelete: SetNull)
+
+  pieces              PieceJustificativeAncienEtudiant[]
+  parcoursHistorique  ParcoursAcademiqueHistorique?
+
+  @@index([email])
+  @@index([matriculeDeclare])
+  @@index([statut])
+  @@index([objetDemande])
+  @@index([createdAt])
+}
+
+model PieceJustificativeAncienEtudiant {
+  id            Int                    @id @default(autoincrement())
+  type          TypePieceAncienEtudiant
+  nomOriginal   String
+  nomStockage   String
+  cheminStockage String
+  mimeType      String
+  tailleOctets  Int
+  createdAt     DateTime               @default(now())
+
+  demandeId Int
+  demande   DemandeAncienEtudiant @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  @@index([demandeId])
+  @@index([type])
+}
+
+model ParcoursAcademiqueHistorique {
+  id                      Int      @id @default(autoincrement())
+  etablissementLibelle    String
+  departementLibelle      String?
+  filiereLibelle          String
+  niveauGrade             String
+  anneeEntree             Int
+  anneeSortie             Int?
+  derniereAnneeAcademique String
+  diplomePrepare          String
+  diplomeObtenu           Boolean  @default(false)
+  anneeObtention          Int?
+  mention                 String?
+  dejaSoutenu             Boolean  @default(false)
+  dateSoutenance          DateTime?
+  sujetSoutenance         String?
+  directeurMemoire        String?
+  presidentJury           String?
+  numeroPv                String?
+  source                   OrigineDossierEtudiant @default(RECONSTITUTION)
+  verifiePar               String?
+  dateVerification         DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  etudiantId Int
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Restrict)
+
+  sourceDemandeId Int @unique
+  sourceDemande   DemandeAncienEtudiant @relation(fields: [sourceDemandeId], references: [id], onDelete: Restrict)
+
+  @@index([etudiantId])
+  @@index([anneeEntree])
+  @@index([anneeSortie])
 }
 
 model InscriptionEtudiant {
