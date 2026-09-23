@@ -4,18 +4,173 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import {
+  ConfigService,
+} from '@nestjs/config';
+
+import {
+  readFileSync,
+} from 'node:fs';
+
+import nodemailer from 'nodemailer';
+
 import { PrismaService } from '../prisma/prisma.service.js';
 import { EligibiliteService } from '../eligibilite/eligibilite.service.js';
 import { CreateDemandeDiplomeDto } from './dto/create-demande-diplome.dto.js';
 import { PublicDiplomeLookupDto } from './dto/public-diplome-lookup.dto.js';
 import { PublicDiplomeRequestDto } from './dto/public-diplome-request.dto.js';
+import { PublicExternalDiplomaRequestDto } from './dto/public-external-diploma-request.dto.js';
+import { PublicExternalDiplomaTrackDto } from './dto/public-external-diploma-track.dto.js';
 
 @Injectable()
 export class DiplomesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eligibiliteService: EligibiliteService,
+    private readonly config: ConfigService,
   ) {}
+
+  private smtpPassword() {
+    const passwordFile =
+      this.config.get<string>(
+        'SMTP_PASSWORD_FILE',
+      );
+
+    if (
+      passwordFile
+    ) {
+      try {
+        return readFileSync(
+          passwordFile,
+          'utf8',
+        ).trimEnd();
+      }
+      catch {
+        return '';
+      }
+    }
+
+    return (
+      this.config.get<string>(
+        'SMTP_PASSWORD',
+      ) ??
+      ''
+    );
+  }
+
+  private async sendMail(
+    to: string,
+    subject: string,
+    text: string,
+  ) {
+    const host =
+      this.config.get<string>(
+        'SMTP_HOST',
+      );
+
+    const from =
+      this.config.get<string>(
+        'SMTP_FROM',
+      );
+
+    const user =
+      this.config.get<string>(
+        'SMTP_USER',
+      );
+
+    const password =
+      this.smtpPassword();
+
+    const port =
+      Number(
+        this.config.get<string>(
+          'SMTP_PORT',
+        ) ??
+        '465',
+      );
+
+    const secure =
+      (
+        this.config.get<string>(
+          'SMTP_SECURE',
+        ) ??
+        'true'
+      ).toLowerCase() ===
+      'true';
+
+    if (
+      !host ||
+      !from ||
+      !user ||
+      !password
+    ) {
+      return false;
+    }
+
+    try {
+      const transporter =
+        nodemailer.createTransport({
+          host,
+          port,
+          secure,
+
+          auth: {
+            user,
+            pass:
+              password,
+          },
+
+          connectionTimeout:
+            10000,
+
+          greetingTimeout:
+            10000,
+
+          socketTimeout:
+            20000,
+
+          tls: {
+            minVersion:
+              'TLSv1.2',
+
+            servername:
+              host,
+          },
+        });
+
+      await transporter.sendMail({
+        from,
+        to,
+        subject,
+        text,
+      });
+
+      return true;
+    }
+    catch {
+      return false;
+    }
+  }
+
+  private externalReference(
+    id: number,
+  ) {
+    const year =
+      new Date()
+        .getUTCFullYear();
+
+    return (
+      'EXT-' +
+      year +
+      '-' +
+      String(
+        id,
+      ).padStart(
+        6,
+        '0',
+      )
+    );
+  }
 
   private async getDemande(id: number) {
     const demande =
@@ -571,6 +726,528 @@ export class DiplomesService {
       email:
         dto.email,
     });
+  }
+
+  async creerDemandeExterne(
+    dto:
+      PublicExternalDiplomaRequestDto,
+  ) {
+    const email =
+      dto.email
+        .trim()
+        .toLowerCase();
+
+    const matricule =
+      dto.matricule
+        ?.trim()
+        .toUpperCase() ||
+      null;
+
+    const dateNaissance =
+      new Date(
+        dto.dateNaissance,
+      );
+
+    if (
+      Number.isNaN(
+        dateNaissance.getTime(),
+      )
+    ) {
+      throw new ConflictException(
+        'Date de naissance invalide',
+      );
+    }
+
+    const existante =
+      await this.prisma
+        .demandeDiplomeExterne
+        .findFirst({
+          where: {
+            email: {
+              equals:
+                email,
+
+              mode:
+                'insensitive',
+            },
+
+            matricule:
+              matricule,
+
+            anneeObtention:
+              dto.anneeObtention,
+
+            typeDemande:
+              dto.typeDemande,
+
+            statut: {
+              in: [
+                'DEMANDEE',
+                'EN_VERIFICATION',
+                'DISPONIBLE',
+              ],
+            },
+          },
+
+          orderBy: {
+            createdAt:
+              'desc',
+          },
+        });
+
+    if (existante) {
+      throw new ConflictException(
+        'Une demande identique est déjà enregistrée sous la référence ' +
+        existante.reference,
+      );
+    }
+
+    const created =
+      await this.prisma
+        .$transaction(
+          async (
+            tx,
+          ) => {
+            const draft =
+              await tx
+                .demandeDiplomeExterne
+                .create({
+                  data: {
+                    reference:
+                      'TEMP-' +
+                      Date.now() +
+                      '-' +
+                      Math.random()
+                        .toString(36)
+                        .slice(
+                          2,
+                          8,
+                        ),
+
+                    email,
+                    matricule,
+
+                    nom:
+                      dto.nom
+                        .trim()
+                        .toUpperCase(),
+
+                    prenom:
+                      dto.prenom
+                        .trim(),
+
+                    dateNaissance,
+
+                    anneeObtention:
+                      dto.anneeObtention,
+
+                    intituleDiplome:
+                      dto.intituleDiplome
+                        .trim(),
+
+                    typeDemande:
+                      dto.typeDemande,
+                  },
+                });
+
+            return tx
+              .demandeDiplomeExterne
+              .update({
+                where: {
+                  id:
+                    draft.id,
+                },
+
+                data: {
+                  reference:
+                    this.externalReference(
+                      draft.id,
+                    ),
+                },
+              });
+          },
+        );
+
+    const typeLabel =
+      dto.typeDemande ===
+      'DUPLICATA'
+        ? 'duplicata de diplôme'
+        : 'diplôme';
+
+    const emailEnvoye =
+      await this.sendMail(
+        email,
+        'Confirmation de votre demande de ' +
+          typeLabel,
+        'Bonjour ' +
+          dto.prenom.trim() +
+          ' ' +
+          dto.nom.trim() +
+          ',\n\n' +
+          'Votre demande de ' +
+          typeLabel +
+          ' a bien été enregistrée sur UniPortail Digital.\n\n' +
+          'Référence : ' +
+          created.reference +
+          '\n' +
+          'Diplôme concerné : ' +
+          created.intituleDiplome +
+          '\n' +
+          'Année d’obtention : ' +
+          created.anneeObtention +
+          '\n\n' +
+          'Votre dossier sera vérifié par le service compétent. Vous recevrez un nouvel e-mail lorsque votre diplôme sera disponible.\n\n' +
+          'UniPortail Digital',
+      );
+
+    if (
+      emailEnvoye
+    ) {
+      await this.prisma
+        .demandeDiplomeExterne
+        .update({
+          where: {
+            id:
+              created.id,
+          },
+
+          data: {
+            confirmationEnvoyeeLe:
+              new Date(),
+          },
+        });
+    }
+
+    return {
+      reference:
+        created.reference,
+
+      statut:
+        created.statut,
+
+      emailEnvoye,
+    };
+  }
+
+  async suivreDemandeExterne(
+    dto:
+      PublicExternalDiplomaTrackDto,
+  ) {
+    const item =
+      await this.prisma
+        .demandeDiplomeExterne
+        .findFirst({
+          where: {
+            reference:
+              dto.reference
+                .trim()
+                .toUpperCase(),
+
+            email: {
+              equals:
+                dto.email
+                  .trim()
+                  .toLowerCase(),
+
+              mode:
+                'insensitive',
+            },
+          },
+
+          select: {
+            reference:
+              true,
+            typeDemande:
+              true,
+            statut:
+              true,
+            intituleDiplome:
+              true,
+            anneeObtention:
+              true,
+            dateDisponibilite:
+              true,
+            motif:
+              true,
+            createdAt:
+              true,
+          },
+        });
+
+    if (!item) {
+      throw new NotFoundException(
+        'Demande introuvable',
+      );
+    }
+
+    return item;
+  }
+
+  async demandesExternes() {
+    return this.prisma
+      .demandeDiplomeExterne
+      .findMany({
+        orderBy: {
+          createdAt:
+            'desc',
+        },
+      });
+  }
+
+  private async getDemandeExterne(
+    id:
+      number,
+  ) {
+    const item =
+      await this.prisma
+        .demandeDiplomeExterne
+        .findUnique({
+          where: {
+            id,
+          },
+        });
+
+    if (!item) {
+      throw new NotFoundException(
+        'Demande externe introuvable',
+      );
+    }
+
+    return item;
+  }
+
+  async verifierDemandeExterne(
+    id:
+      number,
+    actor?: string,
+  ) {
+    const item =
+      await this.getDemandeExterne(
+        id,
+      );
+
+    if (
+      item.statut !==
+      'DEMANDEE'
+    ) {
+      throw new ConflictException(
+        'Seule une demande déposée peut être mise en vérification',
+      );
+    }
+
+    return this.prisma
+      .demandeDiplomeExterne
+      .update({
+        where: {
+          id,
+        },
+
+        data: {
+          statut:
+            'EN_VERIFICATION',
+
+          traiteePar:
+            actor ??
+            null,
+
+          motif:
+            null,
+        },
+      });
+  }
+
+  async validerDemandeExterne(
+    id:
+      number,
+    actor?: string,
+  ) {
+    const item =
+      await this.getDemandeExterne(
+        id,
+      );
+
+    if (
+      ![
+        'DEMANDEE',
+        'EN_VERIFICATION',
+      ].includes(
+        item.statut,
+      )
+    ) {
+      throw new ConflictException(
+        'Cette demande ne peut plus être validée',
+      );
+    }
+
+    const now =
+      new Date();
+
+    const updated =
+      await this.prisma
+        .demandeDiplomeExterne
+        .update({
+          where: {
+            id,
+          },
+
+          data: {
+            statut:
+              'DISPONIBLE',
+
+            dateValidation:
+              now,
+
+            dateDisponibilite:
+              now,
+
+            traiteePar:
+              actor ??
+              null,
+
+            motif:
+              null,
+          },
+        });
+
+    const emailEnvoye =
+      await this.sendMail(
+        updated.email,
+        'Votre diplôme est disponible',
+        'Bonjour ' +
+          updated.prenom +
+          ' ' +
+          updated.nom +
+          ',\n\n' +
+          'Votre demande ' +
+          updated.reference +
+          ' a été validée.\n\n' +
+          'Votre diplôme « ' +
+          updated.intituleDiplome +
+          ' » est désormais disponible auprès du service compétent.\n\n' +
+          'Merci de vous présenter avec une pièce d’identité et la référence de votre demande.\n\n' +
+          'UniPortail Digital',
+      );
+
+    if (
+      emailEnvoye
+    ) {
+      await this.prisma
+        .demandeDiplomeExterne
+        .update({
+          where: {
+            id,
+          },
+
+          data: {
+            disponibiliteEnvoyeeLe:
+              new Date(),
+          },
+        });
+    }
+
+    return {
+      ...updated,
+      emailEnvoye,
+    };
+  }
+
+  async rejeterDemandeExterne(
+    id:
+      number,
+    motif:
+      string,
+    actor?: string,
+  ) {
+    const item =
+      await this.getDemandeExterne(
+        id,
+      );
+
+    if (
+      item.statut ===
+      'DISPONIBLE'
+    ) {
+      throw new ConflictException(
+        'Une demande déjà disponible ne peut pas être rejetée',
+      );
+    }
+
+    return this.prisma
+      .demandeDiplomeExterne
+      .update({
+        where: {
+          id,
+        },
+
+        data: {
+          statut:
+            'REJETEE',
+
+          motif:
+            motif.trim(),
+
+          traiteePar:
+            actor ??
+            null,
+        },
+      });
+  }
+
+  async renvoyerDisponibiliteExterne(
+    id:
+      number,
+  ) {
+    const item =
+      await this.getDemandeExterne(
+        id,
+      );
+
+    if (
+      item.statut !==
+      'DISPONIBLE'
+    ) {
+      throw new ConflictException(
+        'Le diplôme doit être disponible avant le renvoi du message',
+      );
+    }
+
+    const emailEnvoye =
+      await this.sendMail(
+        item.email,
+        'Votre diplôme est disponible',
+        'Bonjour ' +
+          item.prenom +
+          ' ' +
+          item.nom +
+          ',\n\n' +
+          'Votre demande ' +
+          item.reference +
+          ' a été validée. Votre diplôme « ' +
+          item.intituleDiplome +
+          ' » est disponible.\n\n' +
+          'UniPortail Digital',
+      );
+
+    if (
+      emailEnvoye
+    ) {
+      await this.prisma
+        .demandeDiplomeExterne
+        .update({
+          where: {
+            id,
+          },
+
+          data: {
+            disponibiliteEnvoyeeLe:
+              new Date(),
+          },
+        });
+    }
+
+    return {
+      emailEnvoye,
+    };
   }
 
   async mettreEnVerification(
