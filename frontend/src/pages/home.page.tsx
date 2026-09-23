@@ -41,6 +41,25 @@ type PublicActualite = {
   };
 };
 
+type PublicDiplomeDossier = {
+  inscriptionId: number;
+  anneeAcademique: string;
+  formation: string;
+  niveau: string;
+  statut: string;
+  disponible: boolean;
+  retire: boolean;
+  peutDemander: boolean;
+  numeroDiplome?: string | null;
+  dateDisponibilite?: string | null;
+  dateRetrait?: string | null;
+};
+
+type PublicDiplomeResult = {
+  matricule: string;
+  dossiers: PublicDiplomeDossier[];
+};
+
 type IconName =
   | 'graduate'
   | 'users'
@@ -447,6 +466,47 @@ function actualiteSourceLabel(
   return 'Administration';
 }
 
+function diplomeStatusLabel(
+  statut:
+    string,
+) {
+  const labels:
+    Record<
+      string,
+      string
+    > = {
+      DEMANDE_POSSIBLE:
+        'Demande possible',
+      NON_ELIGIBLE:
+        'Pas encore éligible',
+      DEMANDEE:
+        'Demande reçue',
+      EN_VERIFICATION:
+        'En vérification',
+      A_CORRIGER:
+        'Correction demandée',
+      VALIDEE:
+        'Demande validée',
+      REJETEE:
+        'Demande rejetée',
+      GENEREE:
+        'Diplôme généré',
+      SIGNEE:
+        'Diplôme signé',
+      DISPONIBLE:
+        'Diplôme disponible',
+      RETIREE:
+        'Diplôme retiré',
+      ANNULEE:
+        'Demande annulée',
+    };
+
+  return (
+    labels[statut] ??
+    statut
+  );
+}
+
 function actualiteDate(
   value:
     string,
@@ -486,6 +546,44 @@ export function HomePage() {
     useState<PublicActualite[]>(
       [],
     );
+
+  const [
+    diplomeMatricule,
+    setDiplomeMatricule,
+  ] =
+    useState('');
+
+  const [
+    diplomeEmail,
+    setDiplomeEmail,
+  ] =
+    useState('');
+
+  const [
+    diplomeResult,
+    setDiplomeResult,
+  ] =
+    useState<PublicDiplomeResult | null>(
+      null,
+    );
+
+  const [
+    diplomeBusy,
+    setDiplomeBusy,
+  ] =
+    useState(false);
+
+  const [
+    diplomeError,
+    setDiplomeError,
+  ] =
+    useState('');
+
+  const [
+    diplomeMessage,
+    setDiplomeMessage,
+  ] =
+    useState('');
 
   useEffect(
     () => {
@@ -566,6 +664,107 @@ export function HomePage() {
     },
     [],
   );
+
+  async function verifierDiplomePublic(
+    event:
+      React.FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    setDiplomeBusy(true);
+    setDiplomeError('');
+    setDiplomeMessage('');
+
+    try {
+      const result =
+        await api<PublicDiplomeResult>(
+          '/diplomes/public/verifier',
+          {
+            method:
+              'POST',
+
+            body:
+              JSON.stringify({
+                matricule:
+                  diplomeMatricule
+                    .trim(),
+
+                email:
+                  diplomeEmail
+                    .trim(),
+              }),
+          },
+        );
+
+      setDiplomeResult(
+        result,
+      );
+    }
+    catch (error) {
+      setDiplomeResult(
+        null,
+      );
+
+      setDiplomeError(
+        error instanceof Error
+          ? error.message
+          : 'Vérification impossible.',
+      );
+    }
+    finally {
+      setDiplomeBusy(false);
+    }
+  }
+
+  async function demanderDiplomePublic(
+    inscriptionId:
+      number,
+  ) {
+    setDiplomeBusy(true);
+    setDiplomeError('');
+    setDiplomeMessage('');
+
+    try {
+      const result =
+        await api<PublicDiplomeResult>(
+          '/diplomes/public/demander',
+          {
+            method:
+              'POST',
+
+            body:
+              JSON.stringify({
+                matricule:
+                  diplomeMatricule
+                    .trim(),
+
+                email:
+                  diplomeEmail
+                    .trim(),
+
+                inscriptionId,
+              }),
+          },
+        );
+
+      setDiplomeResult(
+        result,
+      );
+
+      setDiplomeMessage(
+        'Votre demande de diplôme a bien été enregistrée.',
+      );
+    }
+    catch (error) {
+      setDiplomeError(
+        error instanceof Error
+          ? error.message
+          : 'Demande impossible.',
+      );
+    }
+    finally {
+      setDiplomeBusy(false);
+    }
+  }
 
   return (
     <main className="public-home">
@@ -1070,6 +1269,208 @@ export function HomePage() {
             </span>
           </div>
         </article>
+      </section>
+
+      <section
+        id="diplomes-public"
+        className="public-diploma-check"
+      >
+        <div className="public-diploma-intro">
+          <span className="public-section-kicker">
+            Service en ligne
+          </span>
+
+          <h2>
+            Vérifier la disponibilité de votre diplôme
+          </h2>
+
+          <p>
+            Saisissez votre matricule et l’adresse e-mail enregistrée dans votre dossier. Si votre diplôme n’est pas encore demandé mais que votre dossier est éligible, vous pourrez effectuer la demande directement ici.
+          </p>
+
+          <div className="public-diploma-security">
+            <Icon
+              name="shield"
+            />
+
+            <span>
+              Vérification sécurisée par matricule et adresse e-mail.
+            </span>
+          </div>
+        </div>
+
+        <div className="public-diploma-card">
+          <form
+            className="public-diploma-form"
+            onSubmit={
+              verifierDiplomePublic
+            }
+          >
+            <label>
+              Matricule
+              <input
+                required
+                value={
+                  diplomeMatricule
+                }
+                onChange={
+                  (event) =>
+                    setDiplomeMatricule(
+                      event.target
+                        .value,
+                    )
+                }
+                placeholder="Votre matricule étudiant"
+              />
+            </label>
+
+            <label>
+              Adresse e-mail
+              <input
+                required
+                type="email"
+                value={
+                  diplomeEmail
+                }
+                onChange={
+                  (event) =>
+                    setDiplomeEmail(
+                      event.target
+                        .value,
+                    )
+                }
+                placeholder="Adresse liée à votre dossier"
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={
+                diplomeBusy
+              }
+            >
+              <Icon
+                name="search"
+              />
+
+              {diplomeBusy
+                ? 'Vérification...'
+                : 'Vérifier mon diplôme'}
+            </button>
+          </form>
+
+          {diplomeError && (
+            <div className="public-diploma-message error">
+              {diplomeError}
+            </div>
+          )}
+
+          {diplomeMessage && (
+            <div className="public-diploma-message success">
+              {diplomeMessage}
+            </div>
+          )}
+
+          {diplomeResult && (
+            <div className="public-diploma-results">
+              {diplomeResult
+                .dossiers
+                .length ===
+              0 ? (
+                <div className="public-diploma-empty">
+                  Aucun dossier de diplôme terminal n’est encore disponible pour ce matricule.
+                </div>
+              ) : (
+                diplomeResult
+                  .dossiers
+                  .map(
+                    (dossier) => (
+                      <article
+                        className="public-diploma-result"
+                        key={
+                          dossier
+                            .inscriptionId
+                        }
+                      >
+                        <div className="public-diploma-result-copy">
+                          <span>
+                            {
+                              dossier
+                                .anneeAcademique
+                            }
+                          </span>
+
+                          <strong>
+                            {
+                              dossier
+                                .formation
+                            }
+                          </strong>
+
+                          <small>
+                            {
+                              dossier
+                                .niveau
+                            }
+                          </small>
+                        </div>
+
+                        <div className="public-diploma-result-status">
+                          <span
+                            className={
+                              dossier
+                                .disponible
+                                ? 'available'
+                                : dossier
+                                    .peutDemander
+                                  ? 'requestable'
+                                  : 'processing'
+                            }
+                          >
+                            {
+                              diplomeStatusLabel(
+                                dossier
+                                  .statut,
+                              )
+                            }
+                          </span>
+
+                          {dossier
+                            .numeroDiplome && (
+                            <small>
+                              N° {
+                                dossier
+                                  .numeroDiplome
+                              }
+                            </small>
+                          )}
+
+                          {dossier
+                            .peutDemander && (
+                            <button
+                              type="button"
+                              disabled={
+                                diplomeBusy
+                              }
+                              onClick={
+                                () =>
+                                  void demanderDiplomePublic(
+                                    dossier
+                                      .inscriptionId,
+                                  )
+                              }
+                            >
+                              Demander mon diplôme
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    ),
+                  )
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="public-metrics">
