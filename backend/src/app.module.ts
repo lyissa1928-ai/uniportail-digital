@@ -53,8 +53,10 @@ import { CompteModule } from './compte/compte.module.js';
 import { EspaceEtudiantModule } from './espace-etudiant/espace-etudiant.module.js';
 import { BrandingModule } from './branding/branding.module.js';
 import { ActualitesModule } from './actualites/actualites.module.js';
+import { PublicSiteModule } from './public-site/public-site.module.js';
 @Module({
   imports: [
+    PublicSiteModule,
     ActualitesModule,
     BrandingModule,
     EspaceEtudiantModule,
