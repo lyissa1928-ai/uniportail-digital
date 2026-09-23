@@ -11,6 +11,7 @@ import {
 
 import {
   api,
+  ApiException,
 } from '../lib/api';
 
 import './home.page.css';
@@ -59,6 +60,13 @@ type PublicDiplomeDossier = {
 type PublicDiplomeResult = {
   matricule: string;
   dossiers: PublicDiplomeDossier[];
+  emailEnvoye?: boolean;
+};
+
+type PublicExternalDiplomeResult = {
+  reference: string;
+  statut: string;
+  emailEnvoye: boolean;
 };
 
 type IconName =
@@ -586,6 +594,40 @@ export function HomePage() {
   ] =
     useState('');
 
+  const [
+    diplomeExternalVisible,
+    setDiplomeExternalVisible,
+  ] =
+    useState(false);
+
+  const [
+    diplomeExternalReference,
+    setDiplomeExternalReference,
+  ] =
+    useState('');
+
+  const [
+    diplomeExternalForm,
+    setDiplomeExternalForm,
+  ] =
+    useState({
+      nom:
+        '',
+      prenom:
+        '',
+      dateNaissance:
+        '',
+      anneeObtention:
+        String(
+          new Date()
+            .getFullYear(),
+        ),
+      intituleDiplome:
+        '',
+      typeDemande:
+        'PREMIERE_DEMANDE',
+    });
+
   useEffect(
     () => {
       let mounted =
@@ -699,17 +741,43 @@ export function HomePage() {
       setDiplomeResult(
         result,
       );
+
+      setDiplomeExternalVisible(
+        false,
+      );
     }
     catch (error) {
       setDiplomeResult(
         null,
       );
 
-      setDiplomeError(
-        error instanceof Error
-          ? error.message
-          : 'Vérification impossible.',
-      );
+      if (
+        error instanceof
+          ApiException &&
+        error.status ===
+          404
+      ) {
+        setDiplomeExternalVisible(
+          true,
+        );
+
+        setDiplomeError('');
+
+        setDiplomeMessage(
+          'Aucun dossier n’a été retrouvé. Complétez le formulaire ci-dessous pour transmettre votre demande au service des diplômes.',
+        );
+      }
+      else {
+        setDiplomeExternalVisible(
+          false,
+        );
+
+        setDiplomeError(
+          error instanceof Error
+            ? error.message
+            : 'Vérification impossible.',
+        );
+      }
     }
     finally {
       setDiplomeBusy(false);
@@ -752,7 +820,10 @@ export function HomePage() {
       );
 
       setDiplomeMessage(
-        'Votre demande de diplôme a bien été enregistrée.',
+        result.emailEnvoye ===
+          false
+          ? 'Votre demande a bien été enregistrée. L’e-mail de confirmation n’a pas pu être envoyé pour le moment.'
+          : 'Votre demande a bien été enregistrée. Un e-mail de confirmation vous a été envoyé.',
       );
     }
     catch (error) {
@@ -760,6 +831,89 @@ export function HomePage() {
         error instanceof Error
           ? error.message
           : 'Demande impossible.',
+      );
+    }
+    finally {
+      setDiplomeBusy(false);
+    }
+  }
+
+  async function demanderDiplomeExternePublic(
+    event:
+      FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    setDiplomeBusy(true);
+    setDiplomeError('');
+    setDiplomeMessage('');
+
+    try {
+      const result =
+        await api<PublicExternalDiplomeResult>(
+          '/diplomes/public/demander-externe',
+          {
+            method:
+              'POST',
+
+            body:
+              JSON.stringify({
+                email:
+                  diplomeEmail
+                    .trim(),
+
+                matricule:
+                  diplomeMatricule
+                    .trim() ||
+                  undefined,
+
+                nom:
+                  diplomeExternalForm
+                    .nom
+                    .trim(),
+
+                prenom:
+                  diplomeExternalForm
+                    .prenom
+                    .trim(),
+
+                dateNaissance:
+                  diplomeExternalForm
+                    .dateNaissance,
+
+                anneeObtention:
+                  Number(
+                    diplomeExternalForm
+                      .anneeObtention,
+                  ),
+
+                intituleDiplome:
+                  diplomeExternalForm
+                    .intituleDiplome
+                    .trim(),
+
+                typeDemande:
+                  diplomeExternalForm
+                    .typeDemande,
+              }),
+          },
+        );
+
+      setDiplomeExternalReference(
+        result.reference,
+      );
+
+      setDiplomeMessage(
+        result.emailEnvoye
+          ? 'Demande enregistrée. Un e-mail de confirmation contenant votre référence a été envoyé.'
+          : 'Demande enregistrée. Conservez votre référence : l’e-mail de confirmation n’a pas pu être envoyé pour le moment.',
+      );
+    }
+    catch (error) {
+      setDiplomeError(
+        error instanceof Error
+          ? error.message
+          : 'Enregistrement impossible.',
       );
     }
     finally {
@@ -1471,6 +1625,202 @@ export function HomePage() {
               )}
             </div>
           )}
+          {diplomeExternalVisible && (
+            <form
+              className="public-diploma-external-form"
+              onSubmit={
+                demanderDiplomeExternePublic
+              }
+            >
+              <div className="public-diploma-external-head">
+                <span>
+                  Dossier non retrouvé
+                </span>
+
+                <strong>
+                  Déposer une demande manuelle
+                </strong>
+
+                <p>
+                  Le service des diplômes vérifiera votre identité et les informations fournies avant validation.
+                </p>
+              </div>
+
+              <label>
+                Type de demande
+                <select
+                  value={
+                    diplomeExternalForm
+                      .typeDemande
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        typeDemande:
+                          event.target
+                            .value,
+                      })
+                  }
+                >
+                  <option value="PREMIERE_DEMANDE">
+                    Demande de diplôme
+                  </option>
+
+                  <option value="DUPLICATA">
+                    Duplicata de diplôme
+                  </option>
+                </select>
+              </label>
+
+              <label>
+                Nom
+                <input
+                  required
+                  maxLength={100}
+                  value={
+                    diplomeExternalForm
+                      .nom
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        nom:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Prénom
+                <input
+                  required
+                  maxLength={120}
+                  value={
+                    diplomeExternalForm
+                      .prenom
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        prenom:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Date de naissance
+                <input
+                  required
+                  type="date"
+                  value={
+                    diplomeExternalForm
+                      .dateNaissance
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        dateNaissance:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label>
+                Année d’obtention
+                <input
+                  required
+                  type="number"
+                  min={1950}
+                  max={2100}
+                  value={
+                    diplomeExternalForm
+                      .anneeObtention
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        anneeObtention:
+                          event.target
+                            .value,
+                      })
+                  }
+                />
+              </label>
+
+              <label className="wide">
+                Diplôme / formation concernée
+                <input
+                  required
+                  maxLength={220}
+                  value={
+                    diplomeExternalForm
+                      .intituleDiplome
+                  }
+                  onChange={
+                    (event) =>
+                      setDiplomeExternalForm({
+                        ...diplomeExternalForm,
+                        intituleDiplome:
+                          event.target
+                            .value,
+                      })
+                  }
+                  placeholder="Ex. Licence Réseaux et Télécommunications"
+                />
+              </label>
+
+              <div className="public-diploma-external-context wide">
+                <span>
+                  Adresse : <strong>{diplomeEmail}</strong>
+                </span>
+
+                <span>
+                  Matricule recherché : <strong>{diplomeMatricule}</strong>
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                className="wide"
+                disabled={
+                  diplomeBusy
+                }
+              >
+                {diplomeBusy
+                  ? 'Enregistrement...'
+                  : 'Envoyer la demande'}
+              </button>
+
+              {diplomeExternalReference && (
+                <div className="public-diploma-reference wide">
+                  <span>
+                    Référence de votre demande
+                  </span>
+
+                  <strong>
+                    {diplomeExternalReference}
+                  </strong>
+
+                  <Link to="/demande-diplome">
+                    Suivre ma demande →
+                  </Link>
+                </div>
+              )}
+            </form>
+          )}
+
         </div>
       </section>
 
