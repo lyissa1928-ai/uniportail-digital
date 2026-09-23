@@ -20,6 +20,7 @@ import {
 type Tab =
   | 'eligibilite'
   | 'demandes'
+  | 'externes'
   | 'registre'
   | 'mes-demandes';
 
@@ -94,6 +95,34 @@ interface DemandeDiplome {
   inscription?: Inscription;
 
   diplome?: Diplome | null;
+}
+
+interface DemandeDiplomeExterne {
+  id: number;
+  reference: string;
+  email: string;
+  matricule?: string | null;
+  nom: string;
+  prenom: string;
+  dateNaissance: string;
+  anneeObtention: number;
+  intituleDiplome: string;
+  typeDemande:
+    | 'PREMIERE_DEMANDE'
+    | 'DUPLICATA';
+  statut:
+    | 'DEMANDEE'
+    | 'EN_VERIFICATION'
+    | 'DISPONIBLE'
+    | 'REJETEE';
+  motif?: string | null;
+  traiteePar?: string | null;
+  dateValidation?: string | null;
+  dateDisponibilite?: string | null;
+  confirmationEnvoyeeLe?: string | null;
+  disponibiliteEnvoyeeLe?: string | null;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 interface Diplome {
@@ -241,6 +270,12 @@ export function DiplomesPage() {
     useState<Diplome[]>([]);
 
   const [
+    demandesExternes,
+    setDemandesExternes,
+  ] =
+    useState<DemandeDiplomeExterne[]>([]);
+
+  const [
     mesDemandes,
     setMesDemandes,
   ] =
@@ -368,6 +403,28 @@ export function DiplomesPage() {
                 .catch(
                   () => {
                     setDiplomes([]);
+                  },
+                ),
+            );
+
+            jobs.push(
+              api<DemandeDiplomeExterne[]>(
+                '/diplomes/demandes-externes',
+              )
+                .then(
+                  (data) => {
+                    setDemandesExternes(
+                      Array.isArray(
+                        data,
+                      )
+                        ? data
+                        : [],
+                    );
+                  },
+                )
+                .catch(
+                  () => {
+                    setDemandesExternes([]);
                   },
                 ),
             );
@@ -761,6 +818,105 @@ export function DiplomesPage() {
     }
   }
 
+  async function transitionExterne(
+    demande:
+      DemandeDiplomeExterne,
+
+    action:
+      'verifier' |
+      'valider' |
+      'rejeter' |
+      'renvoyer-disponibilite',
+  ) {
+    let body:
+      Record<
+        string,
+        unknown
+      > | undefined;
+
+    if (
+      action ===
+      'rejeter'
+    ) {
+      const motif =
+        window.prompt(
+          'Motif du rejet :',
+        );
+
+      if (
+        !motif?.trim()
+      ) {
+        return;
+      }
+
+      body = {
+        motif:
+          motif.trim(),
+      };
+    }
+
+    const labels:
+      Record<
+        string,
+        string
+      > = {
+        verifier:
+          'Mettre cette demande en vérification ?',
+        valider:
+          'Valider cette demande et confirmer la disponibilité du diplôme ? Un e-mail sera envoyé au demandeur.',
+        rejeter:
+          'Rejeter cette demande ?',
+        'renvoyer-disponibilite':
+          'Renvoyer l’e-mail de disponibilité au demandeur ?',
+      };
+
+    if (
+      !window.confirm(
+        labels[action],
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await api(
+        action ===
+          'renvoyer-disponibilite'
+          ? `/diplomes/demandes-externes/${demande.id}/renvoyer-disponibilite`
+          : `/diplomes/demandes-externes/${demande.id}/${action}`,
+        {
+          method:
+            action ===
+              'renvoyer-disponibilite'
+              ? 'POST'
+              : 'PATCH',
+
+          body:
+            body
+              ? JSON.stringify(
+                  body,
+                )
+              : undefined,
+        },
+      );
+
+      notify(
+        action ===
+          'valider'
+          ? 'Demande validée. La disponibilité a été notifiée au demandeur.'
+          : action ===
+            'renvoyer-disponibilite'
+            ? 'E-mail de disponibilité renvoyé.'
+            : 'Demande mise à jour.',
+      );
+
+      await load();
+    }
+    catch (err) {
+      fail(err);
+    }
+  }
+
   const query =
     search
       .trim()
@@ -779,6 +935,35 @@ export function DiplomesPage() {
         ),
       [
         demandes,
+        query,
+      ],
+    );
+
+  const filteredDemandesExternes =
+    useMemo(
+      () =>
+        demandesExternes.filter(
+          (item) =>
+            [
+              item.reference,
+              item.email,
+              item.matricule,
+              item.nom,
+              item.prenom,
+              item.intituleDiplome,
+              item.typeDemande,
+              item.statut,
+              item.anneeObtention,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(
+                query,
+              ),
+        ),
+      [
+        demandesExternes,
         query,
       ],
     );
