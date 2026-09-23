@@ -10,6 +10,7 @@
   Req,
 } from '@nestjs/common';
 
+import { Public } from '../auth/decorators/public.decorator.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 
@@ -17,6 +18,8 @@ import { DiplomesService } from './diplomes.service.js';
 import { CreateDemandeDiplomeDto } from './dto/create-demande-diplome.dto.js';
 import { MotifDiplomeDto } from './dto/motif-diplome.dto.js';
 import { RetraitDiplomeDto } from './dto/retrait-diplome.dto.js';
+import { PublicDiplomeLookupDto } from './dto/public-diplome-lookup.dto.js';
+import { PublicDiplomeRequestDto } from './dto/public-diplome-request.dto.js';
 
 @Controller('diplomes')
 export class DiplomesController {
@@ -24,6 +27,38 @@ export class DiplomesController {
     private readonly service:
       DiplomesService,
   ) {}
+
+  /*
+   * ========================================================
+   * ACCUEIL PUBLIC
+   * ========================================================
+   */
+
+  @Public()
+  @Post('public/verifier')
+  verifierDisponibilitePublique(
+    @Body()
+    dto:
+      PublicDiplomeLookupDto,
+  ) {
+    return this.service
+      .verifierPublic(
+        dto,
+      );
+  }
+
+  @Public()
+  @Post('public/demander')
+  demanderDiplomePublic(
+    @Body()
+    dto:
+      PublicDiplomeRequestDto,
+  ) {
+    return this.service
+      .demanderPublic(
+        dto,
+      );
+  }
 
   /*
    * ========================================================
