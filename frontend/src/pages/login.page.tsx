@@ -6,6 +6,7 @@ import {
 } from 'react';
 
 import {
+  Link,
   Navigate,
   useLocation,
   useNavigate,
@@ -67,6 +68,7 @@ export function LoginPage() {
   const {
     login,
     authenticated,
+    logoutReason,
   } = useAuth();
 
   const navigate =
@@ -347,10 +349,26 @@ export function LoginPage() {
       </section>
 
       <section className="login-pro-access">
-        <div className="login-pro-language">
+        <div className="login-pro-access-nav">
+          <Link
+            to="/"
+            className="login-pro-home-link"
+          >
+            <Icon>
+              <path d="M19 12H5" />
+              <path d="m10 17-5-5 5-5" />
+            </Icon>
+
+            <span>
+              Retour à l’accueil
+            </span>
+          </Link>
+
+          <div className="login-pro-language">
           <span>◎</span>
           Français
           <span>⌄</span>
+          </div>
         </div>
 
         <div className="login-pro-card">
@@ -364,6 +382,26 @@ export function LoginPage() {
               {branding.appName} en toute sécurité.
             </p>
           </div>
+
+          {logoutReason ===
+            'INACTIVITY' && (
+            <div className="login-session-notice">
+              <Icon>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </Icon>
+
+              <div>
+                <strong>
+                  Session expirée
+                </strong>
+
+                <span>
+                  Vous avez été déconnecté après 30 minutes d’inactivité.
+                </span>
+              </div>
+            </div>
+          )}
 
           {erreur && (
             <div className="alert error">
@@ -457,15 +495,14 @@ export function LoginPage() {
             </label>
 
             <div className="login-pro-options">
-              <label className="login-pro-remember">
-                <input
-                  type="checkbox"
-                />
+              <span className="login-pro-single-session">
+                <Icon>
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+                </Icon>
 
-                <span>
-                  Se souvenir de moi
-                </span>
-              </label>
+                Une seule session par navigateur
+              </span>
 
               <span className="login-pro-forgot">
                 Mot de passe oublié ?
@@ -515,7 +552,7 @@ export function LoginPage() {
               </strong>
 
               <p>
-                Vos données sont protégées et confidentielles.
+                Vos données sont protégées. La session est automatiquement fermée après une longue période d’inactivité.
               </p>
             </div>
           </div>
