@@ -119,6 +119,17 @@ export async function api<T>(
       path !== '/auth/login'
     ) {
       clearToken();
+
+      if (
+        typeof window !==
+        'undefined'
+      ) {
+        window.dispatchEvent(
+          new CustomEvent(
+            'uniportail:unauthorized',
+          ),
+        );
+      }
     }
 
     throw new ApiException(
