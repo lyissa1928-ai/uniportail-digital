@@ -23,6 +23,10 @@ import {
 } from './pages/login.page';
 
 import {
+  PublicDiplomaPage,
+} from './pages/public-diploma.page';
+
+import {
   DashboardPage,
 } from './pages/dashboard.page';
 
@@ -89,6 +93,11 @@ export const router =
     {
       path: '/login',
       element: <LoginPage />,
+    },
+
+    {
+      path: '/demande-diplome',
+      element: <PublicDiplomaPage />,
     },
 
     {
