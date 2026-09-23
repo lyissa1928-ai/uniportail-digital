@@ -21603,3 +21603,128 @@ tbody tr:hover {
   margin-left: 0;
   margin-right: 0;
 }
+
+
+/* ============================================================
+   LOGIN SESSION UX START
+   ============================================================ */
+
+.login-pro-access-nav {
+  position: absolute;
+  top: 24px;
+  left: 30px;
+  right: 30px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.login-pro-home-link {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #dbe5ef;
+  border-radius: 9px;
+  background: rgba(255,255,255,.82);
+  color: #244765;
+  font-size: 9px;
+  font-weight: 780;
+  box-shadow: 0 5px 16px rgba(32,68,103,.05);
+  backdrop-filter: blur(10px);
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    transform .15s ease;
+}
+
+.login-pro-home-link:hover {
+  transform: translateX(-1px);
+  border-color: #b9d2eb;
+  background: #fff;
+}
+
+.login-pro-home-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.login-pro-access-nav .login-pro-language {
+  position: static;
+  inset: auto;
+}
+
+.login-session-notice {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr);
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 10px 11px;
+  border: 1px solid #efd8a6;
+  border-radius: 10px;
+  background: #fff9e9;
+  color: #7e5d12;
+}
+
+.login-session-notice > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.login-session-notice strong,
+.login-session-notice span {
+  display: block;
+}
+
+.login-session-notice strong {
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.login-session-notice span {
+  margin-top: 2px;
+  color: #8a6c2a;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.login-pro-single-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #627890;
+  font-size: 8px;
+  font-weight: 680;
+}
+
+.login-pro-single-session svg {
+  width: 15px;
+  height: 15px;
+  color: #397bbd;
+}
+
+@media (max-width: 560px) {
+  .login-pro-access-nav {
+    top: 16px;
+    left: 18px;
+    right: 18px;
+  }
+
+  .login-pro-home-link span {
+    display: none;
+  }
+
+  .login-pro-home-link {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   LOGIN SESSION UX END
+   ============================================================ */
