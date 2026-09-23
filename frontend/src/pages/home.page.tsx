@@ -1,6 +1,7 @@
 import {
   useEffect,
   useState,
+  type FormEvent,
   type ReactNode,
 } from 'react';
 
@@ -667,7 +668,7 @@ export function HomePage() {
 
   async function verifierDiplomePublic(
     event:
-      React.FormEvent<HTMLFormElement>,
+      FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
     setDiplomeBusy(true);
