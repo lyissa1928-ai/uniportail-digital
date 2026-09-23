@@ -621,6 +621,23 @@ export function AuthProvider({
           const now =
             Date.now();
 
+          const lastActivity =
+            readLastActivity();
+
+          if (
+            lastActivity &&
+            now -
+              lastActivity >=
+              SESSION_TIMEOUT_MS
+          ) {
+            applyLogout(
+              'INACTIVITY',
+              true,
+            );
+
+            return;
+          }
+
           if (
             now -
               lastActivityWriteRef.current <
