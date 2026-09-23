@@ -519,6 +519,39 @@ export function AuthProvider({
 
   useEffect(
     () => {
+      const handleUnauthorized =
+        () => {
+          if (
+            getToken()
+          ) {
+            return;
+          }
+
+          applyLogout(
+            'SESSION_EXPIRED',
+            true,
+          );
+        };
+
+      window.addEventListener(
+        'uniportail:unauthorized',
+        handleUnauthorized,
+      );
+
+      return () => {
+        window.removeEventListener(
+          'uniportail:unauthorized',
+          handleUnauthorized,
+        );
+      };
+    },
+    [
+      applyLogout,
+    ],
+  );
+
+  useEffect(
+    () => {
       const markActivity =
         () => {
           if (
