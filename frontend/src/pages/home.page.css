@@ -2099,3 +2099,140 @@
 /* ============================================================
    PUBLIC DIPLOMA SELF-SERVICE END
    ============================================================ */
+
+
+/* ============================================================
+   PUBLIC DIPLOMA FALLBACK REQUEST
+   ============================================================ */
+
+.public-diploma-external-form {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #d9e5f1;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg,#fbfdff,#f5f9ff);
+}
+
+.public-diploma-external-head {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.public-diploma-external-head > span {
+  color: #1479e8;
+  font-size: 8px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+}
+
+.public-diploma-external-head > strong {
+  color: #0c2b4b;
+  font-size: 13px;
+}
+
+.public-diploma-external-head > p {
+  margin: 0;
+  color: #6f8297;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.public-diploma-external-form label {
+  display: grid;
+  gap: 5px;
+  color: #294965;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.public-diploma-external-form input,
+.public-diploma-external-form select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid #d0deeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #183957;
+  font: inherit;
+  font-size: 9px;
+  outline: none;
+}
+
+.public-diploma-external-form input:focus,
+.public-diploma-external-form select:focus {
+  border-color: #82b4e8;
+  box-shadow: 0 0 0 3px rgba(20,121,232,.08);
+}
+
+.public-diploma-external-form .wide {
+  grid-column: 1 / -1;
+}
+
+.public-diploma-external-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 10px 11px;
+  border: 1px solid #dce8f3;
+  border-radius: 8px;
+  background: #eef6ff;
+  color: #58728d;
+  font-size: 8px;
+}
+
+.public-diploma-external-form > button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#147bf0,#0b63cc);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.public-diploma-reference {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #ccead9;
+  border-radius: 9px;
+  background: #eefaf4;
+}
+
+.public-diploma-reference > span {
+  color: #628471;
+  font-size: 8px;
+}
+
+.public-diploma-reference > strong {
+  color: #14784d;
+  font-size: 14px;
+  letter-spacing: .03em;
+}
+
+.public-diploma-reference > a {
+  color: #0c6ccf;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .public-diploma-external-form {
+    grid-template-columns: 1fr;
+  }
+
+  .public-diploma-external-form .wide,
+  .public-diploma-external-head {
+    grid-column: auto;
+  }
+}
