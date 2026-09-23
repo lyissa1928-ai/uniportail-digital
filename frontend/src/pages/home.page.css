@@ -1387,3 +1387,424 @@
     display: none;
   }
 }
+
+
+/* ============================================================
+   PUBLIC HOME TARGET V4
+   Desktop proportions aligned with the approved public mockup
+   ============================================================ */
+
+@media (min-width: 1241px) {
+  .public-nav {
+    min-height: 62px;
+    grid-template-columns:
+      minmax(255px, .78fr)
+      auto
+      minmax(190px, .62fr);
+    gap: 22px;
+    padding:
+      0
+      clamp(
+        56px,
+        5.2vw,
+        78px
+      );
+  }
+
+  .public-brand img {
+    max-width: 238px;
+    max-height: 52px;
+  }
+
+  .public-nav-links {
+    height: 62px;
+    gap:
+      clamp(
+        18px,
+        1.85vw,
+        30px
+      );
+  }
+
+  .public-nav-links a {
+    height: 62px;
+    font-size: 11px;
+  }
+
+  .public-nav-links a::after {
+    bottom: 9px;
+  }
+
+  .public-search-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .public-login-button {
+    min-height: 44px;
+    padding:
+      0
+      20px;
+    font-size: 11px;
+  }
+
+  .public-hero {
+    min-height: 390px;
+    padding:
+      34px
+      clamp(
+        58px,
+        6.2vw,
+        92px
+      )
+      68px;
+  }
+
+  .public-hero-copy {
+    width:
+      min(
+        610px,
+        51%
+      );
+  }
+
+  .public-hero-kicker {
+    margin-bottom: 13px;
+    font-size: 9px;
+    letter-spacing: .27em;
+  }
+
+  .public-hero-kicker::before {
+    width: 47px;
+  }
+
+  .public-hero h1 {
+    font-size:
+      clamp(
+        42px,
+        4vw,
+        57px
+      );
+    line-height: 1.01;
+  }
+
+  .public-hero-copy > p {
+    max-width: 540px;
+    margin-top: 18px;
+    font-size: 14px;
+    line-height: 1.56;
+  }
+
+  .public-hero-actions {
+    gap: 16px;
+    margin-top: 23px;
+  }
+
+  .public-primary-cta,
+  .public-secondary-cta {
+    min-height: 47px;
+    padding:
+      0
+      20px;
+    font-size: 11px;
+  }
+
+  .public-primary-cta svg,
+  .public-secondary-cta svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .public-trust-row {
+    gap: 28px;
+    margin-top: 25px;
+  }
+
+  .public-trust-row span {
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .public-trust-row svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .public-hero-quote {
+    right:
+      clamp(
+        40px,
+        4.8vw,
+        72px
+      );
+    bottom: 45px;
+    width:
+      min(
+        285px,
+        24vw
+      );
+    padding:
+      17px
+      19px
+      17px
+      39px;
+  }
+
+  .public-hero-quote > span {
+    left: 15px;
+    top: 11px;
+    font-size: 27px;
+  }
+
+  .public-hero-quote p {
+    font-size: 11px;
+  }
+
+  .public-modules-wrap {
+    margin:
+      -12px
+      clamp(
+        46px,
+        4.9vw,
+        72px
+      )
+      0;
+  }
+
+  .public-module-card {
+    min-height: 124px;
+    grid-template-columns:
+      58px
+      minmax(
+        0,
+        1fr
+      );
+    gap: 14px;
+    padding:
+      17px
+      19px;
+  }
+
+  .public-module-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 11px;
+  }
+
+  .public-module-icon svg {
+    width: 29px;
+    height: 29px;
+  }
+
+  .public-module-card h2 {
+    font-size: 12px;
+  }
+
+  .public-module-card p {
+    margin-top: 5px;
+    font-size: 9px;
+    line-height: 1.45;
+  }
+
+  .public-module-card a {
+    margin-top: 7px;
+    font-size: 8px;
+  }
+
+  .public-community {
+    min-height: 170px;
+    gap: 34px;
+    padding:
+      27px
+      clamp(
+        48px,
+        5vw,
+        76px
+      )
+      23px;
+  }
+
+  .public-section-kicker {
+    font-size: 8px;
+  }
+
+  .public-community-copy h2 {
+    margin-top: 7px;
+    font-size:
+      clamp(
+        24px,
+        2.1vw,
+        31px
+      );
+  }
+
+  .public-community-copy p {
+    margin-top: 8px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .public-audience-grid {
+    gap: 14px;
+  }
+
+  .public-audience {
+    gap: 5px;
+  }
+
+  .public-audience-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .public-audience-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .public-audience strong {
+    font-size: 10px;
+  }
+
+  .public-audience p {
+    font-size: 8px;
+  }
+
+  .public-showcase {
+    grid-template-columns:
+      minmax(
+        0,
+        1.55fr
+      )
+      minmax(
+        250px,
+        .9fr
+      )
+      minmax(
+        250px,
+        .9fr
+      );
+    gap: 12px;
+    padding:
+      0
+      clamp(
+        26px,
+        3.5vw,
+        46px
+      )
+      17px;
+  }
+
+  .public-about-card,
+  .public-news-panel,
+  .public-partners-panel {
+    min-height: 218px;
+  }
+
+  .public-about-copy {
+    padding:
+      22px
+      21px
+      18px;
+  }
+
+  .public-about-copy h2 {
+    font-size: 16px;
+  }
+
+  .public-about-copy p {
+    font-size: 9.5px;
+  }
+
+  .public-about-button {
+    min-height: 35px;
+    margin-top: 14px;
+    font-size: 8.5px;
+  }
+
+  .public-about-visual {
+    min-height: 218px;
+  }
+
+  .public-about-portrait {
+    right: 47px;
+    width: 98px;
+    height: 148px;
+  }
+
+  .public-news-panel,
+  .public-partners-panel {
+    padding:
+      15px
+      15px
+      12px;
+  }
+
+  .public-panel-heading h2 {
+    font-size: 13px;
+  }
+
+  .public-news-row {
+    grid-template-columns:
+      62px
+      minmax(
+        0,
+        1fr
+      );
+    gap: 8px;
+  }
+
+  .public-news-thumb {
+    width: 62px;
+    height: 43px;
+  }
+
+  .public-news-row-copy strong {
+    font-size: 8px;
+  }
+
+  .public-partner-card {
+    min-height: 51px;
+  }
+
+  .public-metrics {
+    min-height: 102px;
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(
+          0,
+          1fr
+        )
+      )
+      minmax(
+        235px,
+        1.1fr
+      );
+  }
+
+  .public-metrics > article,
+  .public-metric-photo {
+    min-height: 102px;
+  }
+
+  .public-metrics strong {
+    font-size: 16px;
+  }
+
+  .public-metrics small {
+    font-size: 7px;
+  }
+
+  .public-footer-main {
+    min-height: 72px;
+  }
+
+  .public-footer-bottom {
+    min-height: 36px;
+  }
+}
+
+/* ============================================================
+   PUBLIC HOME TARGET V4 END
+   ============================================================ */
