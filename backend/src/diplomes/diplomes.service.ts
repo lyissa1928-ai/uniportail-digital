@@ -803,6 +803,15 @@ export class DiplomesService {
             anneeObtention:
               dto.anneeObtention,
 
+            intituleDiplome: {
+              equals:
+                dto.intituleDiplome
+                  .trim(),
+
+              mode:
+                'insensitive',
+            },
+
             typeDemande:
               dto.typeDemande,
 
