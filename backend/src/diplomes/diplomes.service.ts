@@ -7,6 +7,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { EligibiliteService } from '../eligibilite/eligibilite.service.js';
 import { CreateDemandeDiplomeDto } from './dto/create-demande-diplome.dto.js';
+import { PublicDiplomeLookupDto } from './dto/public-diplome-lookup.dto.js';
+import { PublicDiplomeRequestDto } from './dto/public-diplome-request.dto.js';
 
 @Injectable()
 export class DiplomesService {
@@ -322,6 +324,253 @@ export class DiplomesService {
     return this.findByEtudiant(
       etudiant.id,
     );
+  }
+
+  private async publicStudent(
+    dto:
+      PublicDiplomeLookupDto,
+  ) {
+    const matricule =
+      dto.matricule
+        .trim()
+        .toUpperCase();
+
+    const email =
+      dto.email
+        .trim()
+        .toLowerCase();
+
+    const etudiant =
+      await this.prisma
+        .etudiant
+        .findFirst({
+          where: {
+            matricule,
+
+            email: {
+              equals:
+                email,
+
+              mode:
+                'insensitive',
+            },
+          },
+        });
+
+    if (!etudiant) {
+      throw new NotFoundException(
+        'Aucun dossier correspondant aux informations fournies',
+      );
+    }
+
+    return etudiant;
+  }
+
+  async verifierPublic(
+    dto:
+      PublicDiplomeLookupDto,
+  ) {
+    const etudiant =
+      await this.publicStudent(
+        dto,
+      );
+
+    const inscriptions =
+      await this.prisma
+        .inscriptionEtudiant
+        .findMany({
+          where: {
+            etudiantId:
+              etudiant.id,
+
+            classe: {
+              niveau: {
+                terminal:
+                  true,
+              },
+            },
+          },
+
+          include: {
+            demandeDiplome: {
+              include: {
+                diplome:
+                  true,
+              },
+            },
+
+            classe: {
+              include: {
+                niveau: {
+                  include: {
+                    formation:
+                      true,
+                  },
+                },
+              },
+            },
+          },
+
+          orderBy: {
+            dateInscription:
+              'desc',
+          },
+        });
+
+    const dossiers =
+      await Promise.all(
+        inscriptions.map(
+          async (
+            inscription,
+          ) => {
+            const demande =
+              inscription
+                .demandeDiplome;
+
+            let eligible =
+              false;
+
+            if (!demande) {
+              try {
+                const evaluation =
+                  await this
+                    .eligibiliteService
+                    .evaluerInscription(
+                      inscription.id,
+                    );
+
+                eligible =
+                  evaluation
+                    .eligible;
+              }
+              catch {
+                eligible =
+                  false;
+              }
+            }
+
+            const statut =
+              demande?.statut ??
+              (
+                eligible
+                  ? 'DEMANDE_POSSIBLE'
+                  : 'NON_ELIGIBLE'
+              );
+
+            return {
+              inscriptionId:
+                inscription.id,
+
+              anneeAcademique:
+                inscription
+                  .anneeAcademique,
+
+              formation:
+                inscription
+                  .classe
+                  .niveau
+                  .formation
+                  .nom,
+
+              niveau:
+                inscription
+                  .classe
+                  .niveau
+                  .nom,
+
+              statut,
+
+              disponible:
+                demande
+                  ?.statut ===
+                  'DISPONIBLE',
+
+              retire:
+                demande
+                  ?.statut ===
+                  'RETIREE',
+
+              peutDemander:
+                !demande &&
+                eligible,
+
+              numeroDiplome:
+                demande
+                  ?.diplome
+                  ?.numero ??
+                null,
+
+              dateDisponibilite:
+                demande
+                  ?.diplome
+                  ?.dateDisponibilite ??
+                null,
+
+              dateRetrait:
+                demande
+                  ?.diplome
+                  ?.dateRetrait ??
+                null,
+            };
+          },
+        ),
+      );
+
+    return {
+      matricule:
+        etudiant.matricule,
+
+      dossiers,
+    };
+  }
+
+  async demanderPublic(
+    dto:
+      PublicDiplomeRequestDto,
+  ) {
+    const etudiant =
+      await this.publicStudent(
+        dto,
+      );
+
+    const inscription =
+      await this.prisma
+        .inscriptionEtudiant
+        .findFirst({
+          where: {
+            id:
+              dto.inscriptionId,
+
+            etudiantId:
+              etudiant.id,
+
+            classe: {
+              niveau: {
+                terminal:
+                  true,
+              },
+            },
+          },
+        });
+
+    if (!inscription) {
+      throw new NotFoundException(
+        'Inscription terminale introuvable',
+      );
+    }
+
+    await this
+      .creerDemandeEtudiant(
+        inscription.id,
+        etudiant.id,
+      );
+
+    return this.verifierPublic({
+      matricule:
+        dto.matricule,
+      email:
+        dto.email,
+    });
   }
 
   async mettreEnVerification(
