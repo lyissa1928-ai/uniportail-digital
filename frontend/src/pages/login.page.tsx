@@ -383,8 +383,10 @@ export function LoginPage() {
             </p>
           </div>
 
-          {logoutReason ===
-            'INACTIVITY' && (
+          {(logoutReason ===
+            'INACTIVITY' ||
+            logoutReason ===
+              'SESSION_EXPIRED') && (
             <div className="login-session-notice">
               <Icon>
                 <circle cx="12" cy="12" r="9" />
@@ -397,7 +399,10 @@ export function LoginPage() {
                 </strong>
 
                 <span>
-                  Vous avez été déconnecté après 30 minutes d’inactivité.
+                  {logoutReason ===
+                  'INACTIVITY'
+                    ? 'Vous avez été déconnecté après 30 minutes d’inactivité.'
+                    : 'Votre session n’est plus valide. Veuillez vous reconnecter.'}
                 </span>
               </div>
             </div>
