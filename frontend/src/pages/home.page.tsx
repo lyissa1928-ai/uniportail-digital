@@ -1439,6 +1439,87 @@ export function HomePage() {
         </article>
       </section>
 
+      <section className="public-stats">
+        <div className="public-stat-item">
+          <span className="public-stat-icon">
+            <Icon name="building" />
+          </span>
+
+          <div>
+            <strong>
+              1
+            </strong>
+
+            <span>
+              plateforme centralisée
+            </span>
+          </div>
+        </div>
+
+        <div className="public-stat-item">
+          <span className="public-stat-icon">
+            <Icon name="users" />
+          </span>
+
+          <div>
+            <strong>
+              4
+            </strong>
+
+            <span>
+              profils d’acteurs
+            </span>
+          </div>
+        </div>
+
+        <div className="public-stat-item">
+          <span className="public-stat-icon">
+            <Icon name="teacher" />
+          </span>
+
+          <div>
+            <strong>
+              7
+            </strong>
+
+            <span>
+              modules métiers
+            </span>
+          </div>
+        </div>
+
+        <div className="public-stat-item">
+          <span className="public-stat-icon">
+            <Icon name="shield" />
+          </span>
+
+          <div>
+            <strong>
+              3
+            </strong>
+
+            <span>
+              services éditeurs d’actualités
+            </span>
+          </div>
+        </div>
+
+        <div className="public-stats-visual">
+          <div
+            style={{
+              backgroundImage:
+                `url("${branding.heroImageUrl}")`,
+            }}
+          />
+
+          <strong>
+            L’excellence académique
+            <br />
+            à portée de main
+          </strong>
+        </div>
+      </section>
+
       <section
         id="diplomes-public"
         className="public-diploma-check"
