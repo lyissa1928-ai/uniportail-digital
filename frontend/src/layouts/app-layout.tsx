@@ -146,6 +146,19 @@ const navigation:
 
     {
       label:
+        'Anciens étudiants',
+      path:
+        '/anciens-etudiants',
+      icon:
+        'scolarite',
+      group:
+        'general',
+      permission:
+        'SCOLARITE_GERER',
+    },
+
+    {
+      label:
         'Diplômes',
       path:
         '/diplomes',

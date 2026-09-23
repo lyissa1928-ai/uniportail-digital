@@ -54,8 +54,10 @@ import { EspaceEtudiantModule } from './espace-etudiant/espace-etudiant.module.j
 import { BrandingModule } from './branding/branding.module.js';
 import { ActualitesModule } from './actualites/actualites.module.js';
 import { PublicSiteModule } from './public-site/public-site.module.js';
+import { AnciensEtudiantsModule } from './anciens-etudiants/anciens-etudiants.module.js';
 @Module({
   imports: [
+    AnciensEtudiantsModule,
     PublicSiteModule,
     ActualitesModule,
     BrandingModule,

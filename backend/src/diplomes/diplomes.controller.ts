@@ -10,6 +10,8 @@
   Req,
 } from '@nestjs/common';
 
+import { Throttle } from '@nestjs/throttler';
+
 import { Public } from '../auth/decorators/public.decorator.js';
 import { Permissions } from '../auth/decorators/permissions.decorator.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';

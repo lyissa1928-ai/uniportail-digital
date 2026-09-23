@@ -983,6 +983,19 @@ export function HomePage() {
           </button>
 
           <Link
+            to="/ancien-etudiant"
+            className="public-login-button"
+          >
+            <Icon
+              name="graduate"
+            />
+
+            <span>
+              Ancien étudiant
+            </span>
+          </Link>
+
+          <Link
             to="/login"
             className="public-login-button"
           >
